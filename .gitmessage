@@ -1,0 +1,23 @@
+# ==== Commit Message Format ====
+# <type>: <subject>
+#
+# ==== Type ====
+# feat:     新機能
+# fix:      バグ修正
+# docs:     ドキュメントの変更
+# refactor: リファクタリング
+# test:     テストの追加・修正
+# chore:    その他（依存関係、設定ファイル等）
+
+# ==== Subject ====
+# - 50文字以内
+# - 「〜する」形式で記述
+# - 文末にピリオドを付けない
+
+# ==== Examples ====
+# feat: ユーザー認証機能を追加する
+# fix: ログイン時のエラーを修正する
+# docs: READMEを更新する
+# refactor: API処理を整理する
+# test: 認証のテストを追加する
+# chore: 依存パッケージを更新する
