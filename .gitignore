@@ -1,2 +1,10 @@
 # Python
 */__pycache__/
+.venv/
+
+# Ruff
+.ruff_cache/
+
+# pytest
+.pytest_cache/
+.coverage
