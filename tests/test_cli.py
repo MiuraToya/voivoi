@@ -25,7 +25,7 @@ class TestConfigInit:
         config_file = tmp_path / "config.toml"
 
         # Act
-        with patch("voivoi.cli.get_config_file", return_value=config_file):
+        with patch("voivoi.config.cli.get_config_file", return_value=config_file):
             result = runner.invoke(app, ["config", "init"])
 
         # Assert
@@ -40,7 +40,7 @@ class TestConfigInit:
         config_file = tmp_path / "config.toml"
 
         # Act
-        with patch("voivoi.cli.get_config_file", return_value=config_file):
+        with patch("voivoi.config.cli.get_config_file", return_value=config_file):
             result = runner.invoke(app, ["config", "init"])
 
         # Assert
@@ -55,7 +55,7 @@ class TestConfigInit:
         config_file.write_text('[llm]\nmodel = "llama3.1"\n')
 
         # Act
-        with patch("voivoi.cli.get_config_file", return_value=config_file):
+        with patch("voivoi.config.cli.get_config_file", return_value=config_file):
             result = runner.invoke(app, ["config", "init"])
 
         # Assert
