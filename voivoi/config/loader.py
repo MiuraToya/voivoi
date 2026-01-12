@@ -8,17 +8,18 @@ import tomli_w
 from voivoi.config.schema import Config
 
 
-def load_config(config_file: Path) -> Config:
+def load_config(config_file: Path) -> Config | None:
     """設定を読み込む.
 
     Args:
         config_file: 設定ファイルパス
 
-    設定ファイルが存在しない場合はデフォルト値を返す。
-    一部のキーのみ指定された場合はデフォルト値とマージする。
+    Returns:
+        設定ファイルが存在する場合はConfig、存在しない場合はNone。
+        一部のキーのみ指定された場合はデフォルト値とマージする。
     """
     if not config_file.exists():
-        return Config()
+        return None
 
     with config_file.open("rb") as f:
         data = tomllib.load(f)

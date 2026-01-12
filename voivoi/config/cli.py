@@ -2,7 +2,7 @@
 
 import typer
 
-from voivoi.config.loader import save_config
+from voivoi.config.loader import load_config, save_config
 from voivoi.config.paths import get_config_file
 from voivoi.config.schema import Config
 
@@ -27,7 +27,7 @@ def config_init() -> None:
     """Initialize config file with default values."""
     config_file = get_config_file()
 
-    if config_file.exists():
+    if load_config(config_file) is not None:
         typer.echo(
             typer.style(
                 f"Config file already exists: {config_file}", fg=typer.colors.YELLOW

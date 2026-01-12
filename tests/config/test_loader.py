@@ -9,8 +9,8 @@ from voivoi.config.schema import Config
 class TestLoadConfig:
     """load_config のテスト."""
 
-    def test_load_config_returns_defaults_when_file_not_exists(self, tmp_path) -> None:
-        """設定ファイルが存在しない場合、デフォルト値を返すこと."""
+    def test_load_config_returns_none_when_file_not_exists(self, tmp_path) -> None:
+        """設定ファイルが存在しない場合、Noneを返すこと."""
         # Arrange
         config_file = tmp_path / "config.toml"
 
@@ -18,9 +18,7 @@ class TestLoadConfig:
         config = load_config(config_file)
 
         # Assert
-        assert config.llm.model == "llama3.1"
-        assert config.stt.language == "ja"
-        assert config.tts.enabled is True
+        assert config is None
 
     def test_load_config_reads_file_when_exists(self, tmp_path) -> None:
         """設定ファイルが存在する場合、ファイルから読み込むこと."""
@@ -34,6 +32,7 @@ class TestLoadConfig:
         config = load_config(config_file)
 
         # Assert
+        assert config is not None
         assert config.llm.model == "gemma2"
         assert config.stt.language == "en"
         assert config.tts.enabled is False
@@ -48,6 +47,7 @@ class TestLoadConfig:
         config = load_config(config_file)
 
         # Assert
+        assert config is not None
         assert config.llm.model == "phi3"
         assert config.stt.language == "ja"
         assert config.tts.enabled is True

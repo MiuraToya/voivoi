@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class LLMModel(StrEnum):
@@ -25,11 +25,15 @@ class STTLanguage(StrEnum):
 class LLMConfig(BaseModel):
     """LLM設定."""
 
+    model_config = ConfigDict(extra="forbid")
+
     model: LLMModel = LLMModel.LLAMA3_1
 
 
 class STTConfig(BaseModel):
     """STT設定."""
+
+    model_config = ConfigDict(extra="forbid")
 
     language: STTLanguage = STTLanguage.JA
 
@@ -37,11 +41,15 @@ class STTConfig(BaseModel):
 class TTSConfig(BaseModel):
     """TTS設定."""
 
+    model_config = ConfigDict(extra="forbid")
+
     enabled: bool = True
 
 
 class Config(BaseModel):
     """アプリケーション設定."""
+
+    model_config = ConfigDict(extra="forbid")
 
     llm: LLMConfig = LLMConfig()
     stt: STTConfig = STTConfig()
