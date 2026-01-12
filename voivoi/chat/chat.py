@@ -56,10 +56,16 @@ class Chat:
 
     @classmethod
     def restore(
-        cls, id: str, messages: list[Message], created_at: datetime, updated_at: datetime
+        cls,
+        id: str,
+        messages: list[Message],
+        created_at: datetime,
+        updated_at: datetime,
     ) -> "Chat":
         """永続化データからチャットを復元する."""
-        return cls(id=id, messages=messages, created_at=created_at, updated_at=updated_at)
+        return cls(
+            id=id, messages=messages, created_at=created_at, updated_at=updated_at
+        )
 
     def add_message(self, role: Role, content: str) -> None:
         """メッセージを追加する."""
