@@ -5,12 +5,12 @@
 - [x] 設定ファイルの書き込み（デフォルト値生成）
 - [x] `voivoi config init` コマンド実装
 
-## 2. セッション管理
-- [ ] セッションディレクトリの初期化 (`~/.local/share/voivoi/sessions/`)
-- [ ] JSONL形式での会話保存
-- [ ] JSONL形式からの会話読み込み
-- [ ] `voivoi sessions list` コマンド実装
-- [ ] `voivoi sessions show <session>` コマンド実装
+## 2. チャット管理
+- [x] チャットディレクトリの初期化 (`~/.local/share/voivoi/chats/`)
+- [x] JSONL形式での会話保存
+- [x] JSONL形式からの会話読み込み
+- [x] `voivoi chat list` コマンド実装
+- [x] `voivoi chat show <id>` コマンド実装
 
 ## 3. STT (Whisper)
 - [ ] Whisperモデルの読み込み
