@@ -14,7 +14,7 @@ voivoi は、ターミナル上で利用できるローカル音声LLMアプリ�
 
 - ターミナル完結の音声LLMアプリ
 - ローカル実行前提（Whisper + Ollama + pyttsx）
-- 会話履歴をセッションとして保存
+- 会話履歴をチャットとして保存
 - フェーズ分割による段階的な機能追加
 - 実装内部では STT / LLM / TTS を差し替え可能な設計
 
@@ -65,10 +65,10 @@ voivoi chat
 ## コマンド一覧（Phase 0）
 
 ```bash
-voivoi chat [--session TEXT] [--model TEXT]
+voivoi chat [--model TEXT]
+voivoi chat list
+voivoi chat show <id>
 voivoi config init
-voivoi sessions list
-voivoi sessions show <session>
 ```
 
 ---
@@ -101,16 +101,16 @@ enabled = true
 
 ---
 
-## セッション管理
+## チャット管理
 
 - 保存先ディレクトリ：
 
 ```
-~/.local/share/voivoi/sessions/
+~/.local/share/voivoi/chats/
 ```
 
 - 保存形式：JSONL（1行 = 1メッセージ）
-- セッション名（自動）：`YYYY-MM-DD_HHMMSS`
+- チャットID（自動）：UUID
 
 ---
 
@@ -118,7 +118,7 @@ enabled = true
 
 ### Phase 0（MVP）
 - 音声入力 → STT → LLM → TTS の一連の流れが動作する
-- 会話履歴をセッションとして保存・参照できる
+- 会話履歴をチャットとして保存・参照できる
 
 ### Phase 1（体験改善）
 - LLM 応答のストリーミング表示
