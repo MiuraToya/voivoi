@@ -43,22 +43,54 @@ voivoi は、ターミナル上で利用できるローカル音声LLMアプリ�
 
 ## インストール
 
-TBD
+### 前提条件
+
+1. **Ollama** がインストールされ、起動していること
+   ```bash
+   # Ollamaのインストール（macOS）
+   brew install ollama
+
+   # Ollamaの起動
+   ollama serve
+
+   # モデルのダウンロード（例：llama3.1）
+   ollama pull llama3.1
+   ```
+
+2. **PortAudio** がインストールされていること（PyAudioの依存）
+   ```bash
+   brew install portaudio
+   ```
+
+### voivoiのインストール
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/your-username/voivoi.git
+cd voivoi
+
+# 依存関係のインストール
+uv sync
+
+# 動作確認
+uv run voivoi --help
+```
 
 ---
 
 ## クイックスタート（Phase 0）
 
 ```bash
-voivoi chat
+uv run voivoi chat
 ```
 
 ### 操作方法
-- Enter：録音開始 / 録音停止
-- 音声を文字起こし（バッチSTT）
-- LLM に問い合わせて応答を生成（非ストリーミング）
-- 応答をターミナルに表示し、音声で読み上げ
-- 会話内容は自動的にローカルへ保存
+- マイクに向かって話すと自動で録音開始
+- 無音を検知すると自動で録音停止（VAD）
+- 音声を文字起こし（Whisper）
+- LLM に問い合わせて応答を生成（Ollama）
+- 応答をターミナルに表示し、音声で読み上げ（pyttsx）
+- Ctrl+C で終了
 
 ---
 
