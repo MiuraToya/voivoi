@@ -4,6 +4,7 @@ from typing import Final
 
 import typer
 
+from voivoi.chat.cli import app as chat_app
 from voivoi.config.cli import app as config_app
 
 LOGO: Final[str] = """\
@@ -17,6 +18,7 @@ LOGO: Final[str] = """\
 """
 
 app = typer.Typer()
+app.add_typer(chat_app, name="chat")
 app.add_typer(config_app, name="config")
 
 
