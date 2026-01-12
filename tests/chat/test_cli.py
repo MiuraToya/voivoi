@@ -1,12 +1,68 @@
 """Chat CLI のテスト."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
 from voivoi.cli import app
 
 runner = CliRunner()
+
+
+class TestChatStart:
+    """voivoi chat コマンド（音声チャット開始）のテスト."""
+
+    @patch("voivoi.chat.cli.load_config")
+    @patch("voivoi.chat.cli.PyAudioRecorder")
+    @patch("voivoi.chat.cli.ThresholdVAD")
+    @patch("voivoi.chat.cli.ContinuousListener")
+    @patch("voivoi.chat.cli.WhisperSTT")
+    @patch("voivoi.chat.cli.OllamaLLM")
+    @patch("voivoi.chat.cli.Pyttsx3TTS")
+    @patch("voivoi.chat.cli.VoiceChat")
+    def test_chat_start_initializes_and_runs_voice_chat(
+        self,
+        mock_voice_chat_class: MagicMock,
+        mock_tts_class: MagicMock,
+        mock_llm_class: MagicMock,
+        mock_stt_class: MagicMock,
+        mock_listener_class: MagicMock,
+        mock_vad_class: MagicMock,
+        mock_recorder_class: MagicMock,
+        mock_load_config: MagicMock,
+    ) -> None:
+        """音声チャットを初期化して実行する."""
+        # Arrange
+        from voivoi.config.schema import Config
+
+        mock_load_config.return_value = Config()
+
+        mock_recorder = MagicMock()
+        mock_recorder_class.return_value.__enter__ = MagicMock(
+            return_value=mock_recorder
+        )
+        mock_recorder_class.return_value.__exit__ = MagicMock(return_value=False)
+
+        mock_listener = MagicMock()
+        mock_listener_class.return_value = mock_listener
+        # 空のイテレータで終了させる
+        mock_listener.listen.return_value = iter([])
+
+        mock_voice_chat = MagicMock()
+        mock_voice_chat_class.return_value = mock_voice_chat
+
+        # Act
+        result = runner.invoke(app, ["chat"])
+
+        # Assert
+        assert result.exit_code == 0
+        mock_recorder_class.assert_called_once()
+        mock_vad_class.assert_called_once()
+        mock_listener_class.assert_called_once()
+        mock_stt_class.assert_called_once()
+        mock_llm_class.assert_called_once()
+        mock_tts_class.assert_called_once()
+        mock_voice_chat_class.assert_called_once()
 
 
 class TestChatList:
