@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from voivoi.chat.listener import ContinuousListener
+from voivoi.chat.audio.listener import ContinuousListener
 
 
 class TestContinuousListener:

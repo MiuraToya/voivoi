@@ -11,7 +11,7 @@ class TestMessage:
     def test_message_create_returns_message_with_role_content_created_at(self):
         """Message.create()はrole, content, created_atを持つメッセージを返す."""
         # Act
-        from voivoi.chat.chat import Message
+        from voivoi.chat.domain.models import Message
 
         message = Message.create(role="user", content="こんにちは")
 
@@ -23,7 +23,7 @@ class TestMessage:
     def test_message_create_raises_error_when_role_is_invalid(self):
         """roleがuser/assistant以外の場合はエラー."""
         # Arrange
-        from voivoi.chat.chat import Message
+        from voivoi.chat.domain.models import Message
 
         # Act & Assert
         with pytest.raises(ValueError, match="role"):
@@ -32,7 +32,7 @@ class TestMessage:
     def test_message_create_raises_error_when_content_is_empty(self):
         """contentが空文字の場合はエラー."""
         # Arrange
-        from voivoi.chat.chat import Message
+        from voivoi.chat.domain.models import Message
 
         # Act & Assert
         with pytest.raises(ValueError, match="content"):
@@ -41,7 +41,7 @@ class TestMessage:
     def test_message_restore_returns_message_with_given_values(self):
         """Message.restore()は指定された値でメッセージを復元する."""
         # Arrange
-        from voivoi.chat.chat import Message
+        from voivoi.chat.domain.models import Message
 
         now = datetime.now(timezone.utc)
 
@@ -60,7 +60,7 @@ class TestChat:
     def test_chat_create_returns_new_chat_with_id_and_timestamps(self):
         """Chat.create()は新規Chatを返す."""
         # Act
-        from voivoi.chat.chat import Chat
+        from voivoi.chat.domain.models import Chat
 
         chat = Chat.create()
 
@@ -75,7 +75,7 @@ class TestChat:
     def test_chat_add_message_appends_message_and_updates_timestamp(self):
         """add_messageはメッセージを追加しupdated_atを更新する."""
         # Arrange
-        from voivoi.chat.chat import Chat
+        from voivoi.chat.domain.models import Chat
 
         chat = Chat.create()
         original_updated_at = chat.updated_at
@@ -99,8 +99,8 @@ class TestChatPersistence:
     def test_save_chat_creates_jsonl_file(self, tmp_path):
         """save_chatはJSONLファイルを作成する."""
         # Arrange
-        from voivoi.chat.chat import Chat
-        from voivoi.chat.repository import save_chat
+        from voivoi.chat.domain.models import Chat
+        from voivoi.chat.domain.repository import save_chat
 
         chat = Chat.create()
         chat.add_message("user", "こんにちは")
@@ -118,8 +118,8 @@ class TestChatPersistence:
     def test_load_chat_restores_chat_from_jsonl(self, tmp_path):
         """load_chatはJSONLファイルからChatを復元する."""
         # Arrange
-        from voivoi.chat.chat import Chat
-        from voivoi.chat.repository import load_chat, save_chat
+        from voivoi.chat.domain.models import Chat
+        from voivoi.chat.domain.repository import load_chat, save_chat
 
         original_chat = Chat.create()
         original_chat.add_message("user", "こんにちは")
@@ -141,7 +141,7 @@ class TestChatPersistence:
     def test_load_chat_returns_none_when_file_not_exists(self, tmp_path):
         """load_chatはファイルが存在しない場合Noneを返す."""
         # Arrange
-        from voivoi.chat.repository import load_chat
+        from voivoi.chat.domain.repository import load_chat
 
         path = tmp_path / "nonexistent.jsonl"
 
@@ -154,8 +154,8 @@ class TestChatPersistence:
     def test_list_chats_returns_all_chats_in_directory(self, tmp_path):
         """list_chatsはディレクトリ内の全チャットを返す."""
         # Arrange
-        from voivoi.chat.chat import Chat
-        from voivoi.chat.repository import list_chats, save_chat
+        from voivoi.chat.domain.models import Chat
+        from voivoi.chat.domain.repository import list_chats, save_chat
 
         chat1 = Chat.create()
         chat1.add_message("user", "1つ目")
@@ -177,7 +177,7 @@ class TestChatPersistence:
     def test_list_chats_returns_empty_list_when_directory_is_empty(self, tmp_path):
         """list_chatsはディレクトリが空の場合空リストを返す."""
         # Arrange
-        from voivoi.chat.repository import list_chats
+        from voivoi.chat.domain.repository import list_chats
 
         # Act
         chats = list_chats(tmp_path)

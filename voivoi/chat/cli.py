@@ -2,21 +2,21 @@
 
 import typer
 
-from voivoi.chat.audio import PyAudioRecorder
-from voivoi.chat.listener import ContinuousListener
-from voivoi.chat.llm import OllamaLLM
-from voivoi.chat.paths import get_chats_dir
-from voivoi.chat.repository import list_chats, load_chat
-from voivoi.chat.stt import WhisperSTT
-from voivoi.chat.tts import Pyttsx3TTS
+from voivoi.chat.audio.adapter import PyAudioAdapter
+from voivoi.chat.audio.listener import ContinuousListener
+from voivoi.chat.audio.vad import ThresholdVAD
+from voivoi.chat.domain.paths import get_chats_dir
+from voivoi.chat.domain.repository import list_chats, load_chat
+from voivoi.chat.llm.adapter import OllamaAdapter
+from voivoi.chat.orchestrator import VoiceChat
+from voivoi.chat.stt.adapter import WhisperAdapter
+from voivoi.chat.tts.adapter import Pyttsx3Adapter
 from voivoi.chat.ui import (
     print_ai_message,
     print_info,
     print_status,
     print_user_message,
 )
-from voivoi.chat.vad import ThresholdVAD
-from voivoi.chat.voice_chat import VoiceChat
 from voivoi.config.loader import load_config
 from voivoi.config.paths import get_config_file
 
@@ -37,9 +37,9 @@ def chat_start(ctx: typer.Context) -> None:
         config = Config()
 
     # 各コンポーネントを初期化
-    stt = WhisperSTT(model_name=config.stt.model, language=config.stt.language)
-    llm = OllamaLLM(model=config.llm.model)
-    tts = Pyttsx3TTS()
+    stt = WhisperAdapter(model_name=config.stt.model, language=config.stt.language)
+    llm = OllamaAdapter(model=config.llm.model)
+    tts = Pyttsx3Adapter()
     vad = ThresholdVAD()
 
     voice_chat = VoiceChat(stt=stt, llm=llm, tts=tts)
@@ -47,7 +47,7 @@ def chat_start(ctx: typer.Context) -> None:
     print_info("Voice chat started. Press Ctrl+C to exit.")
     print_status("Listening...")
 
-    with PyAudioRecorder() as recorder:
+    with PyAudioAdapter() as recorder:
         listener = ContinuousListener(recorder=recorder, vad=vad)
 
         try:

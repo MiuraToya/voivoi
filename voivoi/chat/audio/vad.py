@@ -7,7 +7,7 @@ from typing import Protocol
 DEFAULT_THRESHOLD: float = 0.02
 
 
-class VADProvider(Protocol):
+class VADPort(Protocol):
     """VADプロバイダーのインターフェース（依存注入用）."""
 
     def is_speech(self, audio_level: float) -> bool: ...

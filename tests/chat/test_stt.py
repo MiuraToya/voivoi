@@ -5,13 +5,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from voivoi.chat.stt import SilentAudioError, TranscribeResult, WhisperSTT
+from voivoi.chat.stt.adapter import WhisperAdapter
+from voivoi.chat.stt.port import SilentAudioError, TranscribeResult
 
 
-class TestWhisperSTT:
-    """WhisperSTTのテスト."""
+class TestWhisperAdapter:
+    """WhisperAdapterのテスト."""
 
-    @patch("voivoi.chat.stt.whisper")
+    @patch("voivoi.chat.stt.adapter.whisper")
     def test_transcribe_returns_text_from_audio(self, mock_whisper: MagicMock) -> None:
         """音声ファイルからテキストを返す."""
         # Arrange
@@ -21,7 +22,7 @@ class TestWhisperSTT:
             "segments": [{"no_speech_prob": 0.1}],
         }
         mock_whisper.load_model.return_value = mock_model
-        stt = WhisperSTT()
+        stt = WhisperAdapter()
         audio_path = Path("/tmp/test.wav")
 
         # Act
@@ -30,7 +31,7 @@ class TestWhisperSTT:
         # Assert
         assert result.text == "こんにちは"
 
-    @patch("voivoi.chat.stt.whisper")
+    @patch("voivoi.chat.stt.adapter.whisper")
     def test_transcribe_uses_configured_language(self, mock_whisper: MagicMock) -> None:
         """設定された言語で文字起こしする."""
         # Arrange
@@ -40,7 +41,7 @@ class TestWhisperSTT:
             "segments": [{"no_speech_prob": 0.1}],
         }
         mock_whisper.load_model.return_value = mock_model
-        stt = WhisperSTT(language="en")
+        stt = WhisperAdapter(language="en")
         audio_path = Path("/tmp/test.wav")
 
         # Act
@@ -51,7 +52,7 @@ class TestWhisperSTT:
             str(audio_path), language="en", fp16=False
         )
 
-    @patch("voivoi.chat.stt.whisper")
+    @patch("voivoi.chat.stt.adapter.whisper")
     def test_transcribe_trims_whitespace_from_result(
         self, mock_whisper: MagicMock
     ) -> None:
@@ -63,7 +64,7 @@ class TestWhisperSTT:
             "segments": [{"no_speech_prob": 0.1}],
         }
         mock_whisper.load_model.return_value = mock_model
-        stt = WhisperSTT()
+        stt = WhisperAdapter()
         audio_path = Path("/tmp/test.wav")
 
         # Act
@@ -109,7 +110,7 @@ class TestSilentAudioError:
         # Act & Assert
         assert issubclass(SilentAudioError, Exception)
 
-    @patch("voivoi.chat.stt.whisper")
+    @patch("voivoi.chat.stt.adapter.whisper")
     def test_transcribe_raises_silent_audio_error_when_silent(
         self, mock_whisper: MagicMock
     ) -> None:
@@ -121,7 +122,7 @@ class TestSilentAudioError:
             "segments": [],
         }
         mock_whisper.load_model.return_value = mock_model
-        stt = WhisperSTT()
+        stt = WhisperAdapter()
         audio_path = Path("/tmp/silent.wav")
 
         # Act & Assert

@@ -1,15 +1,15 @@
-"""VoiceChat（音声チャット統合）モジュール."""
+"""VoiceChat（音声チャット統合）オーケストレーター."""
 
 from __future__ import annotations
 
 import tempfile
 from pathlib import Path
 
-from voivoi.chat.llm import LLMMessage, LLMProvider
-from voivoi.chat.stt import SilentAudioError, STTProvider
-from voivoi.chat.tts import TTSProvider
+from voivoi.chat.audio.wav import save_wav
+from voivoi.chat.llm.port import LLMMessage, LLMPort
+from voivoi.chat.stt.port import SilentAudioError, STTPort
+from voivoi.chat.tts.port import TTSPort
 from voivoi.chat.ui import print_ai_message, print_user_message
-from voivoi.chat.wav import save_wav
 
 
 class VoiceChat:
@@ -17,9 +17,9 @@ class VoiceChat:
 
     def __init__(
         self,
-        stt: STTProvider,
-        llm: LLMProvider,
-        tts: TTSProvider,
+        stt: STTPort,
+        llm: LLMPort,
+        tts: TTSPort,
         temp_dir: Path | None = None,
     ) -> None:
         self._stt = stt

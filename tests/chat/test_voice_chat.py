@@ -3,15 +3,15 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from voivoi.chat.llm import LLMMessage
-from voivoi.chat.stt import TranscribeResult
-from voivoi.chat.voice_chat import VoiceChat
+from voivoi.chat.llm.port import LLMMessage
+from voivoi.chat.orchestrator import VoiceChat
+from voivoi.chat.stt.port import TranscribeResult
 
 
 class TestVoiceChat:
     """VoiceChatのテスト."""
 
-    @patch("voivoi.chat.voice_chat.save_wav")
+    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_transcribes_and_generates_response(
         self, mock_save_wav: MagicMock, tmp_path: Path
     ) -> None:
@@ -38,7 +38,7 @@ class TestVoiceChat:
         mock_llm.generate.assert_called_once()
         mock_tts.speak.assert_called_once_with("こんにちは！何かお手伝いできますか？")
 
-    @patch("voivoi.chat.voice_chat.save_wav")
+    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_includes_conversation_history(
         self, mock_save_wav: MagicMock, tmp_path: Path
     ) -> None:
@@ -78,13 +78,13 @@ class TestVoiceChat:
             role="user", content="今日の天気は？"
         )
 
-    @patch("voivoi.chat.voice_chat.save_wav")
+    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_skips_silent_audio(
         self, mock_save_wav: MagicMock, tmp_path: Path
     ) -> None:
         """無音の場合はLLM呼び出しをスキップする."""
         # Arrange
-        from voivoi.chat.stt import SilentAudioError
+        from voivoi.chat.stt.port import SilentAudioError
 
         mock_stt = MagicMock()
         mock_llm = MagicMock()

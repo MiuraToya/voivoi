@@ -13,12 +13,12 @@ class TestChatStart:
     """voivoi chat コマンド（音声チャット開始）のテスト."""
 
     @patch("voivoi.chat.cli.load_config")
-    @patch("voivoi.chat.cli.PyAudioRecorder")
+    @patch("voivoi.chat.cli.PyAudioAdapter")
     @patch("voivoi.chat.cli.ThresholdVAD")
     @patch("voivoi.chat.cli.ContinuousListener")
-    @patch("voivoi.chat.cli.WhisperSTT")
-    @patch("voivoi.chat.cli.OllamaLLM")
-    @patch("voivoi.chat.cli.Pyttsx3TTS")
+    @patch("voivoi.chat.cli.WhisperAdapter")
+    @patch("voivoi.chat.cli.OllamaAdapter")
+    @patch("voivoi.chat.cli.Pyttsx3Adapter")
     @patch("voivoi.chat.cli.VoiceChat")
     def test_chat_start_initializes_and_runs_voice_chat(
         self,
@@ -85,8 +85,8 @@ class TestChatList:
     def test_chat_list_shows_chats_with_id_and_date(self, tmp_path) -> None:
         """チャット一覧をID・日時とともに表示する."""
         # Arrange
-        from voivoi.chat.chat import Chat
-        from voivoi.chat.repository import save_chat
+        from voivoi.chat.domain.models import Chat
+        from voivoi.chat.domain.repository import save_chat
 
         chats_dir = tmp_path / "chats"
         chats_dir.mkdir()
@@ -110,8 +110,8 @@ class TestChatShow:
     def test_chat_show_displays_messages(self, tmp_path) -> None:
         """チャット内容を表示する."""
         # Arrange
-        from voivoi.chat.chat import Chat
-        from voivoi.chat.repository import save_chat
+        from voivoi.chat.domain.models import Chat
+        from voivoi.chat.domain.repository import save_chat
 
         chats_dir = tmp_path / "chats"
         chats_dir.mkdir()

@@ -1,6 +1,6 @@
 """VAD（音声検出）モジュールのテスト."""
 
-from voivoi.chat.vad import ThresholdVAD
+from voivoi.chat.audio.vad import ThresholdVAD
 
 
 class TestThresholdVAD:

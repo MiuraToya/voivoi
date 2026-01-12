@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from voivoi.chat.audio import AudioRecorderProvider
-from voivoi.chat.vad import VADProvider
+from voivoi.chat.audio.port import AudioRecorderPort
+from voivoi.chat.audio.vad import VADPort
 
 # デフォルト設定
 DEFAULT_MIN_SPEECH_CHUNKS = 3  # 最小発話チャンク数（ノイズ除去用）
@@ -17,8 +17,8 @@ class ContinuousListener:
 
     def __init__(
         self,
-        recorder: AudioRecorderProvider,
-        vad: VADProvider,
+        recorder: AudioRecorderPort,
+        vad: VADPort,
         min_speech_chunks: int = DEFAULT_MIN_SPEECH_CHUNKS,
         silence_chunks: int = DEFAULT_SILENCE_CHUNKS,
     ) -> None:

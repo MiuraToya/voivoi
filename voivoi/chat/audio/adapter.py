@@ -1,9 +1,9 @@
-"""音声録音モジュール."""
+"""PyAudioアダプター（音声録音実装）."""
 
 from __future__ import annotations
 
 import struct
-from typing import Protocol, Self
+from typing import Self
 
 import pyaudio
 
@@ -14,16 +14,7 @@ CHUNK_SIZE = 1024  # 1チャンクあたりのフレーム数
 FORMAT = pyaudio.paInt16  # 16-bit signed integer
 
 
-class AudioRecorderProvider(Protocol):
-    """音声録音プロバイダーのインターフェース（依存注入用）."""
-
-    def read_chunk(self) -> tuple[bytes, float]: ...
-    def close(self) -> None: ...
-    def __enter__(self) -> Self: ...
-    def __exit__(self, *args: object) -> None: ...
-
-
-class PyAudioRecorder:
+class PyAudioAdapter:
     """PyAudioを使用した音声録音実装."""
 
     def __init__(

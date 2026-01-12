@@ -1,19 +1,11 @@
-"""TTS（音声合成）モジュール."""
+"""pyttsx3アダプター（TTS実装）."""
 
 from __future__ import annotations
-
-from typing import Protocol
 
 import pyttsx3
 
 
-class TTSProvider(Protocol):
-    """TTSプロバイダーのインターフェース（依存注入用）."""
-
-    def speak(self, text: str) -> None: ...
-
-
-class Pyttsx3TTS:
+class Pyttsx3Adapter:
     """pyttsx3を使用したTTS実装."""
 
     def speak(self, text: str) -> None:

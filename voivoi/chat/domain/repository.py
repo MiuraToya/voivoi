@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from voivoi.chat.chat import Chat, Message
+from voivoi.chat.domain.models import Chat, Message
 
 
 def save_chat(chat: Chat, path: Path) -> None:

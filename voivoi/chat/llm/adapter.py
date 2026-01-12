@@ -1,35 +1,14 @@
-"""LLM（大規模言語モデル）モジュール."""
+"""Ollamaアダプター（LLM実装）."""
 
 from __future__ import annotations
-
-from dataclasses import dataclass
-from typing import Literal, Protocol
 
 import ollama
 from ollama import ResponseError
 
-LLMRole = Literal["user", "assistant", "system"]
+from voivoi.chat.llm.port import LLMConnectionError, LLMMessage
 
 
-@dataclass(frozen=True)
-class LLMMessage:
-    """LLMに送信するメッセージ."""
-
-    role: LLMRole
-    content: str
-
-
-class LLMConnectionError(Exception):
-    """LLMへの接続に失敗した場合のエラー."""
-
-
-class LLMProvider(Protocol):
-    """LLMプロバイダーのインターフェース（依存注入用）."""
-
-    def generate(self, messages: list[LLMMessage]) -> str: ...
-
-
-class OllamaLLM:
+class OllamaAdapter:
     """Ollamaを使用したLLM実装."""
 
     def __init__(self, model: str) -> None:

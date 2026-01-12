@@ -5,7 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from voivoi.chat.llm import LLMConnectionError, LLMMessage, LLMProvider, OllamaLLM
+from voivoi.chat.llm.adapter import OllamaAdapter
+from voivoi.chat.llm.port import LLMConnectionError, LLMMessage, LLMPort
 
 
 class TestLLMMessage:
@@ -38,26 +39,26 @@ class TestLLMMessage:
             message.content = "変更"  # type: ignore[misc]
 
 
-class TestLLMProvider:
-    """LLMProviderのテスト."""
+class TestLLMPort:
+    """LLMPortのテスト."""
 
-    def test_llm_provider_is_protocol(self) -> None:
-        """LLMProviderはProtocolである."""
+    def test_llm_port_is_protocol(self) -> None:
+        """LLMPortはProtocolである."""
         # Arrange & Act & Assert
-        assert issubclass(LLMProvider, Protocol)
+        assert issubclass(LLMPort, Protocol)
 
 
-class TestOllamaLLM:
-    """OllamaLLMのテスト."""
+class TestOllamaAdapter:
+    """OllamaAdapterのテスト."""
 
-    @patch("voivoi.chat.llm.ollama")
+    @patch("voivoi.chat.llm.adapter.ollama")
     def test_generate_returns_response_from_ollama(
         self, mock_ollama: MagicMock
     ) -> None:
         """Ollamaからの応答を返す."""
         # Arrange
         mock_ollama.chat.return_value = {"message": {"content": "こんにちは！"}}
-        llm = OllamaLLM(model="llama3.1")
+        llm = OllamaAdapter(model="llama3.1")
         messages = [LLMMessage(role="user", content="挨拶して")]
 
         # Act
@@ -66,14 +67,14 @@ class TestOllamaLLM:
         # Assert
         assert result == "こんにちは！"
 
-    @patch("voivoi.chat.llm.ollama")
+    @patch("voivoi.chat.llm.adapter.ollama")
     def test_generate_sends_messages_with_configured_model(
         self, mock_ollama: MagicMock
     ) -> None:
         """設定されたモデルでメッセージを送信する."""
         # Arrange
         mock_ollama.chat.return_value = {"message": {"content": "応答"}}
-        llm = OllamaLLM(model="gemma2")
+        llm = OllamaAdapter(model="gemma2")
         messages = [LLMMessage(role="user", content="テスト")]
 
         # Act
@@ -85,12 +86,12 @@ class TestOllamaLLM:
             messages=[{"role": "user", "content": "テスト"}],
         )
 
-    @patch("voivoi.chat.llm.ollama")
+    @patch("voivoi.chat.llm.adapter.ollama")
     def test_generate_passes_conversation_history(self, mock_ollama: MagicMock) -> None:
         """会話履歴を含めてOllamaに送信する."""
         # Arrange
         mock_ollama.chat.return_value = {"message": {"content": "東京です"}}
-        llm = OllamaLLM(model="llama3.1")
+        llm = OllamaAdapter(model="llama3.1")
         messages = [
             LLMMessage(role="user", content="私は日本に住んでいます"),
             LLMMessage(role="assistant", content="日本のどこにお住まいですか？"),
@@ -120,7 +121,7 @@ class TestLLMConnectionError:
         # Act & Assert
         assert issubclass(LLMConnectionError, Exception)
 
-    @patch("voivoi.chat.llm.ollama")
+    @patch("voivoi.chat.llm.adapter.ollama")
     def test_generate_raises_connection_error_when_ollama_unavailable(
         self, mock_ollama: MagicMock
     ) -> None:
@@ -129,7 +130,7 @@ class TestLLMConnectionError:
         from ollama import ResponseError
 
         mock_ollama.chat.side_effect = ResponseError("connection refused")
-        llm = OllamaLLM(model="llama3.1")
+        llm = OllamaAdapter(model="llama3.1")
         messages = [LLMMessage(role="user", content="こんにちは")]
 
         # Act & Assert

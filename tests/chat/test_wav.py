@@ -3,7 +3,7 @@
 import wave
 from pathlib import Path
 
-from voivoi.chat.wav import save_wav
+from voivoi.chat.audio.wav import save_wav
 
 
 class TestSaveWav:

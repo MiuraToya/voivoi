@@ -8,7 +8,8 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nrefactor: config CLIコマンドを config/cli.py に分離\n\nvoivoi/cli.pyの肥大化を防ぐため、各機能のCLIを個別モジュールに分離。\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(xargs:*)",
       "Bash(uv sync:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nrefactor: chat/ディレクトリをport/adapter構成に再編成\n\n- audio/, stt/, tts/, llm/, domain/ のサブディレクトリに分割\n- Protocol定義をport.py、具体実装をadapter.pyに分離\n- voice_chat.py を orchestrator.py にリネーム\n- クラス名を *Provider から *Port/*Adapter に変更\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
