@@ -34,4 +34,4 @@
 - [x] 録音 → STT → LLM → TTS の一連フロー
 - [x] 会話ループの実装（ContinuousListener）
 - [x] `voivoi chat` コマンド実装
-- [ ] セッション自動保存の統合
+- [x] セッション自動保存の統合

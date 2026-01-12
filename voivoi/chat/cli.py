@@ -1,14 +1,17 @@
 """Chat CLI コマンド."""
 
+from pathlib import Path
+
 import typer
 
 from voivoi.chat.audio.adapter import PyAudioAdapter
 from voivoi.chat.audio.listener import ContinuousListener
 from voivoi.chat.audio.vad import ThresholdVAD
+from voivoi.chat.domain.models import Chat
 from voivoi.chat.domain.paths import get_chats_dir
-from voivoi.chat.domain.repository import list_chats, load_chat
+from voivoi.chat.domain.repository import list_chats, load_chat, save_chat
 from voivoi.chat.llm.adapter import OllamaAdapter
-from voivoi.chat.orchestrator import VoiceChat
+from voivoi.chat.orchestrator import ChatOrchestrator
 from voivoi.chat.stt.adapter import WhisperAdapter
 from voivoi.chat.tts.adapter import Pyttsx3Adapter
 from voivoi.chat.ui import (
@@ -21,6 +24,15 @@ from voivoi.config.loader import load_config
 from voivoi.config.paths import get_config_file
 
 app = typer.Typer()
+
+
+def save_session(chat: Chat, chats_dir: Path) -> None:
+    """会話履歴をファイルに保存する."""
+    if not chat.messages:
+        return
+
+    chats_dir.mkdir(parents=True, exist_ok=True)
+    save_chat(chat, chats_dir / f"{chat.id}.jsonl")
 
 
 @app.callback(invoke_without_command=True)
@@ -42,7 +54,7 @@ def chat_start(ctx: typer.Context) -> None:
     tts = Pyttsx3Adapter()
     vad = ThresholdVAD()
 
-    voice_chat = VoiceChat(stt=stt, llm=llm, tts=tts)
+    voice_chat = ChatOrchestrator(stt=stt, llm=llm, tts=tts)
 
     print_info("Voice chat started. Press Ctrl+C to exit.")
     print_status("Listening...")
@@ -56,6 +68,7 @@ def chat_start(ctx: typer.Context) -> None:
                 voice_chat.process_audio(audio_data)
                 print_status("Listening...")
         except KeyboardInterrupt:
+            save_session(voice_chat.get_chat(), get_chats_dir())
             print_info("\nVoice chat ended.")
 
 

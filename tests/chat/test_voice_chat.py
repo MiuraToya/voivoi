@@ -1,15 +1,15 @@
-"""VoiceChat（音声チャット統合）モジュールのテスト."""
+"""ChatOrchestrator（音声チャット統合）モジュールのテスト."""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from voivoi.chat.llm.port import LLMMessage
-from voivoi.chat.orchestrator import VoiceChat
+from voivoi.chat.orchestrator import ChatOrchestrator
 from voivoi.chat.stt.port import TranscribeResult
 
 
-class TestVoiceChat:
-    """VoiceChatのテスト."""
+class TestChatOrchestrator:
+    """ChatOrchestratorのテスト."""
 
     @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_transcribes_and_generates_response(
@@ -26,7 +26,7 @@ class TestVoiceChat:
         )
         mock_llm.generate.return_value = "こんにちは！何かお手伝いできますか？"
 
-        voice_chat = VoiceChat(
+        voice_chat = ChatOrchestrator(
             stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
         )
 
@@ -57,7 +57,7 @@ class TestVoiceChat:
             "今日は晴れです。",
         ]
 
-        voice_chat = VoiceChat(
+        voice_chat = ChatOrchestrator(
             stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
         )
 
@@ -92,7 +92,7 @@ class TestVoiceChat:
 
         mock_stt.transcribe.side_effect = SilentAudioError("無音")
 
-        voice_chat = VoiceChat(
+        voice_chat = ChatOrchestrator(
             stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
         )
 
@@ -102,3 +102,50 @@ class TestVoiceChat:
         # Assert
         mock_llm.generate.assert_not_called()
         mock_tts.speak.assert_not_called()
+
+    def test_get_chat_returns_empty_chat_initially(self, tmp_path: Path) -> None:
+        """会話開始前は空のChatを返す."""
+        # Arrange
+        mock_stt = MagicMock()
+        mock_llm = MagicMock()
+        mock_tts = MagicMock()
+
+        voice_chat = ChatOrchestrator(
+            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+        )
+
+        # Act
+        chat = voice_chat.get_chat()
+
+        # Assert
+        assert chat.messages == []
+
+    @patch("voivoi.chat.orchestrator.save_wav")
+    def test_get_chat_returns_conversation_history(
+        self, mock_save_wav: MagicMock, tmp_path: Path
+    ) -> None:
+        """音声入力ごとにユーザー発話とAI応答がChatに追加される."""
+        # Arrange
+        mock_stt = MagicMock()
+        mock_llm = MagicMock()
+        mock_tts = MagicMock()
+
+        mock_stt.transcribe.return_value = TranscribeResult(
+            text="こんにちは", no_speech_prob=0.1
+        )
+        mock_llm.generate.return_value = "こんにちは！"
+
+        voice_chat = ChatOrchestrator(
+            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+        )
+
+        # Act
+        voice_chat.process_audio(b"audio")
+        chat = voice_chat.get_chat()
+
+        # Assert
+        assert len(chat.messages) == 2
+        assert chat.messages[0].role == "user"
+        assert chat.messages[0].content == "こんにちは"
+        assert chat.messages[1].role == "assistant"
+        assert chat.messages[1].content == "こんにちは！"

@@ -1,12 +1,54 @@
 """Chat CLI のテスト."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
+from voivoi.chat.cli import save_session
+from voivoi.chat.domain.models import Chat
+from voivoi.chat.domain.repository import load_chat
 from voivoi.cli import app
 
 runner = CliRunner()
+
+
+class TestSaveSession:
+    """セッション保存のテスト."""
+
+    def test_save_session_creates_chat_file_with_messages(self, tmp_path: Path) -> None:
+        """会話終了時にメッセージがJSONLファイルとして保存される."""
+        # Arrange
+        chat = Chat.create()
+        chat.add_message("user", "こんにちは")
+        chat.add_message("assistant", "はい、こんにちは！")
+
+        # Act
+        save_session(chat, tmp_path)
+
+        # Assert
+        files = list(tmp_path.glob("*.jsonl"))
+        assert len(files) == 1
+
+        saved_chat = load_chat(files[0])
+        assert saved_chat is not None
+        assert len(saved_chat.messages) == 2
+        assert saved_chat.messages[0].role == "user"
+        assert saved_chat.messages[0].content == "こんにちは"
+        assert saved_chat.messages[1].role == "assistant"
+        assert saved_chat.messages[1].content == "はい、こんにちは！"
+
+    def test_save_session_does_nothing_when_no_messages(self, tmp_path: Path) -> None:
+        """会話がない場合はファイルを作成しない."""
+        # Arrange
+        chat = Chat.create()
+
+        # Act
+        save_session(chat, tmp_path)
+
+        # Assert
+        files = list(tmp_path.glob("*.jsonl"))
+        assert len(files) == 0
 
 
 class TestChatStart:
@@ -19,7 +61,7 @@ class TestChatStart:
     @patch("voivoi.chat.cli.WhisperAdapter")
     @patch("voivoi.chat.cli.OllamaAdapter")
     @patch("voivoi.chat.cli.Pyttsx3Adapter")
-    @patch("voivoi.chat.cli.VoiceChat")
+    @patch("voivoi.chat.cli.ChatOrchestrator")
     def test_chat_start_initializes_and_runs_voice_chat(
         self,
         mock_voice_chat_class: MagicMock,
