@@ -5,7 +5,7 @@ from __future__ import annotations
 import struct
 from typing import Self
 
-import pyaudio
+import pyaudio  # ty: ignore[unresolved-import]
 
 # 録音設定
 SAMPLE_RATE = 16000  # Whisperが期待するサンプルレート
