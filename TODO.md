@@ -13,9 +13,9 @@
 - [x] `voivoi chat show <id>` コマンド実装
 
 ## 3. STT (Whisper)
-- [ ] Whisperモデルの読み込み
-- [ ] 音声ファイル → テキスト変換
-- [ ] STTインターフェース定義（依存注入用）
+- [x] Whisperモデルの読み込み
+- [x] 音声ファイル → テキスト変換
+- [x] STTインターフェース定義（依存注入用）
 
 ## 4. LLM (Ollama)
 - [ ] Ollamaクライアント接続

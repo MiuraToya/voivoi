@@ -36,6 +36,7 @@ class STTConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     language: STTLanguage = STTLanguage.JA
+    model: str = "base"
 
 
 class TTSConfig(BaseModel):

@@ -62,6 +62,24 @@ class TestSTTConfig:
         with pytest.raises(ValidationError):
             STTConfig(language="invalid")  # type: ignore[arg-type]
 
+    def test_stt_config_has_default_model_base(self) -> None:
+        """デフォルトモデルが base であること."""
+        # Act
+        config = STTConfig()
+
+        # Assert
+        assert config.model == "base"
+
+    def test_stt_config_accepts_valid_model_names(self) -> None:
+        """有効なモデル名を受け入れること."""
+        # Arrange
+        valid_models = ["tiny", "base", "small", "medium", "large"]
+
+        # Act & Assert
+        for model in valid_models:
+            config = STTConfig(model=model)
+            assert config.model == model
+
 
 class TestTTSConfig:
     """TTSConfig のテスト."""
