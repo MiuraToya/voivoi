@@ -31,9 +31,7 @@ class TestWhisperSTT:
         assert result.text == "こんにちは"
 
     @patch("voivoi.chat.stt.whisper")
-    def test_transcribe_uses_configured_language(
-        self, mock_whisper: MagicMock
-    ) -> None:
+    def test_transcribe_uses_configured_language(self, mock_whisper: MagicMock) -> None:
         """設定された言語で文字起こしする."""
         # Arrange
         mock_model = MagicMock()
