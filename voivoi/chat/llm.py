@@ -42,9 +42,7 @@ class OllamaLLM:
             LLMConnectionError: Ollamaへの接続に失敗した場合
         """
         try:
-            ollama_messages = [
-                {"role": m.role, "content": m.content} for m in messages
-            ]
+            ollama_messages = [{"role": m.role, "content": m.content} for m in messages]
             response = ollama.chat(model=self._model, messages=ollama_messages)
             return response["message"]["content"]
         except ResponseError as e:

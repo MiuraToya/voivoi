@@ -47,7 +47,9 @@ class TestWhisperSTT:
         stt.transcribe(audio_path)
 
         # Assert
-        mock_model.transcribe.assert_called_once_with(str(audio_path), language="en")
+        mock_model.transcribe.assert_called_once_with(
+            str(audio_path), language="en", fp16=False
+        )
 
     @patch("voivoi.chat.stt.whisper")
     def test_transcribe_trims_whitespace_from_result(

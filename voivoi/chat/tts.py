@@ -16,10 +16,10 @@ class TTSProvider(Protocol):
 class Pyttsx3TTS:
     """pyttsx3を使用したTTS実装."""
 
-    def __init__(self) -> None:
-        self._engine = pyttsx3.init()
-
     def speak(self, text: str) -> None:
         """テキストを音声で読み上げる."""
-        self._engine.say(text)
-        self._engine.runAndWait()
+        # macOSでは同一エンジンの再利用で問題が起きるため、毎回初期化
+        engine = pyttsx3.init()
+        engine.say(text)
+        engine.runAndWait()
+        engine.stop()
