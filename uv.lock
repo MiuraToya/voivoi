@@ -3358,6 +3358,7 @@ source = { editable = "." }
 dependencies = [
     { name = "ollama" },
     { name = "openai-whisper" },
+    { name = "pyaudio" },
     { name = "pydantic" },
     { name = "pyttsx3" },
     { name = "tomli-w" },
@@ -3365,9 +3366,6 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-audio = [
-    { name = "pyaudio" },
-]
 dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -3379,6 +3377,7 @@ dev = [
 requires-dist = [
     { name = "ollama", specifier = ">=0.4.8" },
     { name = "openai-whisper", specifier = ">=20240930" },
+    { name = "pyaudio", specifier = ">=0.2.14" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pyttsx3", specifier = ">=2.99" },
     { name = "tomli-w", specifier = ">=1.2.0" },
@@ -3386,7 +3385,6 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-audio = [{ name = "pyaudio", specifier = ">=0.2.14" }]
 dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=6.0.0" },

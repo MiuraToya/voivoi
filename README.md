@@ -69,14 +69,12 @@ voivoi は、ターミナル上で利用できるローカル音声LLMアプリ�
 git clone https://github.com/your-username/voivoi.git
 cd voivoi
 
-# 依存関係のインストール（音声機能を含む）
-uv sync --group audio
+# 依存関係のインストール
+uv sync
 
 # 動作確認
 uv run voivoi --help
 ```
-
-> **Note**: `uv sync` のみで実行すると PyAudio がインストールされません。音声入力機能を使用するには `--group audio` オプションが必要です。
 
 ---
 
