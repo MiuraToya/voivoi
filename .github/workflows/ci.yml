@@ -32,8 +32,8 @@ jobs:
       - name: Format check (ruff format)
         run: uv run ruff format --check .
 
-      - name: Type check (ty)
-        run: uv run ty check
+      - name: Type check (mypy)
+        run: uv run mypy voivoi
 
       - name: Test with coverage (pytest)
         run: uv run pytest --cov --cov-report=term-missing --cov-report=html

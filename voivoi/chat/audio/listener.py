@@ -10,7 +10,9 @@ from voivoi.chat.audio.vad import VADPort
 
 # デフォルト設定
 DEFAULT_MIN_SPEECH_CHUNKS: Final[int] = 3  # 最小発話チャンク数（ノイズ除去用）
-DEFAULT_SILENCE_CHUNKS: Final[int] = 15  # 発話終了と判定するまでの無音チャンク数（約1秒）
+DEFAULT_SILENCE_CHUNKS: Final[int] = (
+    15  # 発話終了と判定するまでの無音チャンク数（約1秒）
+)
 
 
 class ContinuousListener:
