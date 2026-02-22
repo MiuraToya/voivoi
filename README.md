@@ -1,178 +1,114 @@
 # voivoi
 
-voivoi は、ターミナル上で利用できるローカル音声LLMアプリケーションです。  
-ユーザーの音声入力を **OpenAI Whisper（ローカル実行）** により文字起こし（STT）し、  
-**Ollama** 上で動作する大規模言語モデル（LLM）が応答を生成、  
-その結果を **pyttsx** によって音声合成（TTS）します。 
+ターミナルで動くローカル音声LLMアプリ。
 
-「キーボードに触れずに考える」「思考の壁打ちを音声で行う」ことを目的とした、  
-シンプルかつ拡張可能なターミナル音声インターフェースです。
+音声入力を [Whisper](https://github.com/openai/whisper)（ローカル実行）で文字起こしし、[Ollama](https://ollama.com/) 上のLLMが応答を生成、[pyttsx3](https://github.com/nateshmbhat/pyttsx3) で音声合成します。キーボードに触れずに、音声だけでLLMと会話できます。
 
----
+## Features
 
-## 特徴
+- 音声入力 → 文字起こし → LLM応答 → 音声読み上げの一連フロー
+- すべてローカルで動作（Whisper + Ollama + pyttsx3）
+- 無音検知（VAD）による自動録音開始・停止
+- 会話履歴の自動保存・参照
+- STT / LLM / TTS を内部で差し替え可能な設計
 
-- ターミナル完結の音声LLMアプリ
-- ローカル実行前提（Whisper + Ollama + pyttsx）
-- 会話履歴をチャットとして保存
-- フェーズ分割による段階的な機能追加
-- 実装内部では STT / LLM / TTS を差し替え可能な設計
+## Requirements
 
----
+- macOS
+- Python 3.14+
+- [uv](https://docs.astral.sh/uv/)
+- [Ollama](https://ollama.com/)
+- PortAudio（PyAudioの依存）
 
-## 利用技術
+## Installation
 
-- **STT**: OpenAI Whisper（ローカル実行）
-- **LLM**: Ollama
-- **TTS**: pyttsx
-- **CLI**: Typer
-- **Language**: Python 3.14
-- **Lint / Type Check**: ruff, ty
-
----
-
-## 対応環境
-
-- macOS（優先対応）
-- Python 3.14
-- Ollama がローカルで起動していること
-- Whisper をローカル実行できる環境
-- pyttsx が利用可能な環境
-
----
-
-## インストール
-
-### 前提条件
-
-1. **Ollama** がインストールされ、起動していること
-   ```bash
-   # Ollamaのインストール（macOS）
-   brew install ollama
-
-   # Ollamaの起動
-   ollama serve
-
-   # モデルのダウンロード（例：llama3.1）
-   ollama pull llama3.1
-   ```
-
-2. **PortAudio** がインストールされていること（PyAudioの依存）
-   ```bash
-   brew install portaudio
-   ```
-
-### voivoiのインストール
+### 1. Ollama のセットアップ
 
 ```bash
-# リポジトリのクローン
-git clone https://github.com/your-username/voivoi.git
-cd voivoi
-
-# 依存関係のインストール
-uv sync
-
-# 動作確認
-uv run voivoi --help
+brew install ollama
+ollama serve
+ollama pull llama3.1
 ```
 
----
+### 2. PortAudio のインストール
 
-## クイックスタート（Phase 0）
+```bash
+brew install portaudio
+```
+
+### 3. voivoi のインストール
+
+```bash
+git clone https://github.com/MiuraToya/voivoi.git
+cd voivoi
+uv sync
+```
+
+## Usage
+
+### 音声チャットを始める
 
 ```bash
 uv run voivoi chat
 ```
 
-### 操作方法
-- マイクに向かって話すと自動で録音開始
-- 無音を検知すると自動で録音停止（VAD）
-- 音声を文字起こし（Whisper）
-- LLM に問い合わせて応答を生成（Ollama）
-- 応答をターミナルに表示し、音声で読み上げ（pyttsx）
-- Ctrl+C で終了
+マイクに向かって話すと自動で録音が始まり、無音を検知すると録音が止まります。音声は自動で文字起こしされ、LLMが応答を生成し、音声で読み上げます。`Ctrl+C` で終了します。
 
----
-
-## コマンド一覧（Phase 0）
+使用するモデルを指定することもできます：
 
 ```bash
-voivoi chat [--model TEXT]
-voivoi chat list
-voivoi chat show <id>
-voivoi config init
+uv run voivoi chat --model gemma2
 ```
 
----
+### チャット履歴を見る
 
-## 設定ファイル
+```bash
+# 保存済みチャットの一覧
+uv run voivoi chat list
 
-設定ファイルは以下のパスに保存されます。
-
+# 特定のチャットを表示
+uv run voivoi chat show <chat-id>
 ```
-~/.config/voivoi/config.toml
+
+チャットは `~/.local/share/voivoi/chats/` にJSONL形式で自動保存されます。
+
+## Configuration
+
+初期設定ファイルを生成します：
+
+```bash
+uv run voivoi config init
 ```
 
-### 設定内容（Phase 0〜2）
-
-Phase 0〜2 において、設定ファイルは **動作パラメータのみ** を扱います。  
-STT / LLM / TTS の種類をユーザーが切り替えることはできません。
+設定ファイルは `~/.config/voivoi/config.toml` に保存されます。
 
 ```toml
 [llm]
-model = "llama3.1"
+model = "llama3.1"    # llama3.1, llama3.2, gemma2, phi3, mistral
 
 [stt]
-language = "ja"
+language = "ja"       # ja, en
+model = "base"        # Whisperモデルサイズ
 
 [tts]
-enabled = true
+enabled = true        # 音声読み上げの有効/無効
 ```
 
-※ provider の切り替えは将来フェーズで検討予定です。
+## Development
 
----
+```bash
+# 依存関係のインストール
+uv sync
 
-## チャット管理
+# テスト
+uv run pytest
 
-- 保存先ディレクトリ：
+# リント
+uv run ruff check .
 
+# フォーマット
+uv run ruff format .
+
+# 型チェック
+uv run mypy voivoi
 ```
-~/.local/share/voivoi/chats/
-```
-
-- 保存形式：JSONL（1行 = 1メッセージ）
-- チャットID（自動）：UUID
-
----
-
-## フェーズ計画
-
-### Phase 0（MVP）
-- 音声入力 → STT → LLM → TTS の一連の流れが動作する
-- 会話履歴をチャットとして保存・参照できる
-
-### Phase 1（体験改善）
-- LLM 応答のストリーミング表示
-- 応答生成の中断
-- system プロンプト指定
-- セッション削除機能
-
-### Phase 2（音声会話の自然さ）
-- STT の逐次文字起こし
-- 無音検知（VAD）による自動録音停止
-- 読み上げ中の割り込み発話（barge-in）
-
----
-
-## 設計方針（補足）
-
-- STT / LLM / TTS は内部的には依存注入により切り替え可能
-- Phase 0〜2 では「ユーザーに選択肢を与えない」ことで仕様を単純化
-- 外部からの provider 切り替えは将来フェーズで検討
-
----
-
-## ライセンス
-
-TBD
