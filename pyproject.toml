@@ -29,6 +29,9 @@ dev = [
     "mypy>=1.15",
 ]
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.coverage.run]
 source = ["voivoi"]
 branch = true
