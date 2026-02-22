@@ -31,7 +31,7 @@ uv run ruff check .
 uv run ruff check --fix .
 
 # 型チェック
-uv run ty check
+uv run mypy voivoi
 ```
 
 ## アーキテクチャ

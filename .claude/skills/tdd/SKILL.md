@@ -43,7 +43,7 @@ uv run pytest --cov --cov-report=term-missing
 
 ```bash
 uv run ruff check --fix .
-uv run ty check
+uv run mypy voivoi
 ```
 
 ---
