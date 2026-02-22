@@ -19,6 +19,7 @@
 - [uv](https://docs.astral.sh/uv/)
 - [Ollama](https://ollama.com/)
 - PortAudio（PyAudioの依存）
+- ffmpeg（Whisperの依存）
 
 ## Installation
 
@@ -26,14 +27,21 @@
 
 ```bash
 brew install ollama
+
+# Ollamaサーバーをバックグラウンドで起動（Mac起動時にも自動起動）
+brew services start ollama
+
+# または、都度起動する場合
 ollama serve
+
+# 使用するモデルをダウンロード（初回のみ）
 ollama pull llama3.1
 ```
 
-### 2. PortAudio のインストール
+### 2. システム依存のインストール
 
 ```bash
-brew install portaudio
+brew install portaudio ffmpeg
 ```
 
 ### 3. voivoi のインストール
