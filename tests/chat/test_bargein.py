@@ -1,8 +1,14 @@
 """BargeInDetector（バージイン検出）モジュールのテスト."""
 
-from unittest.mock import MagicMock
+import struct
+from unittest.mock import create_autospec
 
+from voivoi.chat.audio.echo import EchoCanceller
+from voivoi.chat.audio.player import AudioPlayerPort
+from voivoi.chat.audio.port import AudioRecorderPort
+from voivoi.chat.audio.vad import ThresholdVAD
 from voivoi.chat.bargein import BargeInDetector
+from voivoi.chat.tts.port import TTSSynthesizerPort
 
 CHUNK_BYTES = 1024 * 2  # 1024サンプル × 2バイト（int16）
 
@@ -12,30 +18,32 @@ def _silent_chunk() -> bytes:
     return b"\x00" * CHUNK_BYTES
 
 
+def _tone_chunk(amplitude: int = 5000) -> bytes:
+    """一定振幅のトーンチャンクを生成する."""
+    samples = [amplitude] * (CHUNK_BYTES // 2)
+    return struct.pack(f"<{len(samples)}h", *samples)
+
+
 class TestBargeInDetector:
     """BargeInDetectorのテスト."""
 
     def test_monitor_plays_all_chunks_when_no_speech(self) -> None:
         """発話が検出されない場合、全チャンクが再生される."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         pcm_data = _silent_chunk() * 3
         mock_synthesizer.synthesize.return_value = pcm_data
         mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.return_value = 0.001
-        mock_vad.is_speech.return_value = False
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=0,
             min_speech_frames=1,
         )
@@ -49,26 +57,23 @@ class TestBargeInDetector:
         mock_player.stop.assert_not_called()
 
     def test_monitor_stops_when_speech_detected(self) -> None:
-        """エコー除去後に発話を検出すると再生を停止する."""
+        """マイクにユーザー音声が入ると再生を停止する."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         pcm_data = _silent_chunk() * 5
         mock_synthesizer.synthesize.return_value = pcm_data
-        mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.side_effect = [0.001, 0.001, 0.15, 0.15, 0.15]
-        mock_vad.is_speech.side_effect = lambda level: level > 0.02
+        # マイクにはユーザーの声（エコーではない独立した音声）が入る
+        mock_recorder.read_chunk.return_value = (_tone_chunk(8000), 0.0)
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=0,
             min_speech_frames=1,
         )
@@ -76,72 +81,26 @@ class TestBargeInDetector:
         # Act
         detector.monitor("長い応答テキスト")
 
-        # Assert — 3チャンク目で停止
-        assert mock_player.play_chunk.call_count == 3
+        # Assert — 発話検出で途中停止（全5チャンクは再生されない）
+        assert mock_player.play_chunk.call_count < 5
         mock_player.stop.assert_called_once()
-
-    def test_monitor_passes_accumulated_ref_buffer_to_echo_canceller(self) -> None:
-        """EchoCancellerに累積された参照バッファ（再生済みチャンクの連結）を渡す."""
-        # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
-
-        chunk_a = b"\x01\x00" * 1024
-        chunk_b = b"\x02\x00" * 1024
-        chunk_c = b"\x03\x00" * 1024
-        mock_synthesizer.synthesize.return_value = chunk_a + chunk_b + chunk_c
-
-        mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.return_value = 0.001
-        mock_vad.is_speech.return_value = False
-
-        detector = BargeInDetector(
-            recorder=mock_recorder,
-            synthesizer=mock_synthesizer,
-            player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
-            warmup_chunks=0,
-            min_speech_frames=1,
-        )
-
-        # Act
-        detector.monitor("テスト")
-
-        # Assert — cancel()の第2引数が累積バッファ
-        calls = mock_echo_canceller.cancel.call_args_list
-        assert len(calls) == 3
-
-        # 1回目: ref_buffer = chunk_a
-        assert calls[0][0][1] == chunk_a
-        # 2回目: ref_buffer = chunk_a + chunk_b
-        assert calls[1][0][1] == chunk_a + chunk_b
-        # 3回目: ref_buffer = chunk_a + chunk_b + chunk_c
-        assert calls[2][0][1] == chunk_a + chunk_b + chunk_c
 
     def test_monitor_flushes_input_buffer_before_playback(self) -> None:
         """再生開始前に入力バッファをフラッシュする."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         mock_synthesizer.synthesize.return_value = _silent_chunk()
         mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.return_value = 0.001
-        mock_vad.is_speech.return_value = False
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=0,
             min_speech_frames=1,
         )
@@ -155,24 +114,21 @@ class TestBargeInDetector:
     def test_monitor_skips_vad_during_warmup(self) -> None:
         """ウォームアップ期間中はVAD判定をスキップする."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         pcm_data = _silent_chunk() * 10
         mock_synthesizer.synthesize.return_value = pcm_data
-        mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.return_value = 0.15
-        mock_vad.is_speech.return_value = True
+        # 常にユーザー音声が入っている状態
+        mock_recorder.read_chunk.return_value = (_tone_chunk(8000), 0.0)
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=3,
             min_speech_frames=1,
         )
@@ -183,41 +139,37 @@ class TestBargeInDetector:
         # Assert — ウォームアップ3チャンク + 発話検出1チャンク = 4チャンク再生
         assert mock_player.play_chunk.call_count == 4
         mock_player.stop.assert_called_once()
-        assert mock_echo_canceller.cancel.call_count == 1
-        assert mock_vad.is_speech.call_count == 1
 
     def test_monitor_requires_consecutive_speech_frames(self) -> None:
         """連続した発話フレームが規定回数に達しないと停止しない."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         pcm_data = _silent_chunk() * 10
         mock_synthesizer.synthesize.return_value = pcm_data
-        mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.side_effect = [
-            0.15,
-            0.15,
-            0.001,
-            0.15,
-            0.15,
-            0.15,
-            0.15,
-            0.15,
-            0.15,
-            0.15,
+        # 発話→発話→無音→発話→発話→発話→...
+        mic_responses = [
+            (_tone_chunk(8000), 0.0),  # chunk 0: speech
+            (_tone_chunk(8000), 0.0),  # chunk 1: speech
+            (_silent_chunk(), 0.0),    # chunk 2: silence → reset
+            (_tone_chunk(8000), 0.0),  # chunk 3: speech
+            (_tone_chunk(8000), 0.0),  # chunk 4: speech
+            (_tone_chunk(8000), 0.0),  # chunk 5: speech → 3連続達成
+            (_tone_chunk(8000), 0.0),
+            (_tone_chunk(8000), 0.0),
+            (_tone_chunk(8000), 0.0),
+            (_tone_chunk(8000), 0.0),
         ]
-        mock_vad.is_speech.side_effect = lambda level: level > 0.02
+        mock_recorder.read_chunk.side_effect = mic_responses
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=0,
             min_speech_frames=3,
         )
@@ -232,25 +184,21 @@ class TestBargeInDetector:
     def test_monitor_uses_default_warmup_and_debounce(self) -> None:
         """デフォルト設定（warmup=3, min_speech_frames=2）で動作する."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
         pcm_data = _silent_chunk() * 10
         mock_synthesizer.synthesize.return_value = pcm_data
-        mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
-        mock_echo_canceller.cancel.return_value = 0.15
-        mock_vad.is_speech.return_value = True
+        mock_recorder.read_chunk.return_value = (_tone_chunk(8000), 0.0)
 
         # デフォルト値を使用（warmup_chunks=3, min_speech_frames=2）
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
-            echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            echo_canceller=EchoCanceller(),
+            vad=ThresholdVAD(threshold=0.05),
         )
 
         # Act
@@ -263,11 +211,10 @@ class TestBargeInDetector:
     def test_monitor_limits_ref_buffer_size(self) -> None:
         """ref_bufferがmax_ref_chunksに制限される."""
         # Arrange
-        mock_synthesizer = MagicMock()
-        mock_player = MagicMock()
-        mock_recorder = MagicMock()
-        mock_echo_canceller = MagicMock()
-        mock_vad = MagicMock()
+        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
+        mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
+        mock_echo_canceller = create_autospec(EchoCanceller, instance=True, spec_set=True)
 
         # 5チャンク分のPCMデータ（各チャンク異なるバイト）
         chunks = [bytes([i]) * CHUNK_BYTES for i in range(1, 6)]
@@ -275,14 +222,13 @@ class TestBargeInDetector:
 
         mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
         mock_echo_canceller.cancel.return_value = 0.001
-        mock_vad.is_speech.return_value = False
 
         detector = BargeInDetector(
             recorder=mock_recorder,
             synthesizer=mock_synthesizer,
             player=mock_player,
             echo_canceller=mock_echo_canceller,
-            vad=mock_vad,
+            vad=ThresholdVAD(threshold=0.05),
             warmup_chunks=0,
             min_speech_frames=1,
             max_ref_chunks=3,

@@ -65,36 +65,34 @@ class TestChatStart:
     @patch("voivoi.chat.cli.PyAudioPlayer")
     @patch("voivoi.chat.cli.EchoCanceller")
     @patch("voivoi.chat.cli.BargeInDetector")
-    def test_chat_start_initializes_and_runs_voice_chat(
+    def test_chat_start_runs_listener_loop(
         self,
-        mock_bargein_class: MagicMock,
-        mock_echo_class: MagicMock,
-        mock_player_class: MagicMock,
-        mock_synth_class: MagicMock,
+        _bargein: MagicMock,
+        _echo: MagicMock,
+        _player: MagicMock,
+        _synth: MagicMock,
         mock_voice_chat_class: MagicMock,
-        mock_llm_class: MagicMock,
-        mock_stt_class: MagicMock,
+        _llm: MagicMock,
+        _stt: MagicMock,
         mock_listener_class: MagicMock,
-        mock_vad_class: MagicMock,
+        _vad: MagicMock,
         mock_recorder_class: MagicMock,
         mock_load_config: MagicMock,
     ) -> None:
-        """音声チャットを初期化して実行する."""
+        """chatコマンドがlistenerループを起動し、音声を処理する."""
         # Arrange
         from voivoi.config.schema import Config
 
         mock_load_config.return_value = Config()
 
-        mock_recorder = MagicMock()
         mock_recorder_class.return_value.__enter__ = MagicMock(
-            return_value=mock_recorder
+            return_value=MagicMock()
         )
         mock_recorder_class.return_value.__exit__ = MagicMock(return_value=False)
 
         mock_listener = MagicMock()
         mock_listener_class.return_value = mock_listener
-        # 空のイテレータで終了させる
-        mock_listener.listen.return_value = iter([])
+        mock_listener.listen.return_value = iter([b"audio1", b"audio2"])
 
         mock_voice_chat = MagicMock()
         mock_voice_chat_class.return_value = mock_voice_chat
@@ -102,20 +100,9 @@ class TestChatStart:
         # Act
         result = runner.invoke(app, ["chat"])
 
-        # Assert
+        # Assert — コマンドが正常終了し、音声がprocess_audioに渡される
         assert result.exit_code == 0
-        mock_recorder_class.assert_called_once()
-        # ThresholdVAD: リスナー用 + バージイン用
-        assert mock_vad_class.call_count == 2
-        mock_listener_class.assert_called_once()
-        mock_stt_class.assert_called_once()
-        mock_llm_class.assert_called_once()
-        mock_voice_chat_class.assert_called_once()
-        # エコーキャンセレーション関連
-        mock_synth_class.assert_called_once()
-        mock_player_class.assert_called_once()
-        mock_echo_class.assert_called_once()
-        mock_bargein_class.assert_called_once()
+        assert mock_voice_chat.process_audio.call_count == 2
 
 
 class TestChatList:

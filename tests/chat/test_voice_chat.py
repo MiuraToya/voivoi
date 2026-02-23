@@ -1,25 +1,25 @@
 """ChatOrchestrator（音声チャット統合）モジュールのテスト."""
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import create_autospec
 
-from voivoi.chat.llm.port import LLMMessage
+from voivoi.chat.bargein import BargeInDetector
+from voivoi.chat.llm.port import LLMMessage, LLMPort
 from voivoi.chat.orchestrator import ChatOrchestrator
-from voivoi.chat.stt.port import TranscribeResult
+from voivoi.chat.stt.port import STTPort, TranscribeResult
 
 
 class TestChatOrchestrator:
     """ChatOrchestratorのテスト."""
 
-    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_transcribes_and_generates_response(
-        self, mock_save_wav: MagicMock, tmp_path: Path
+        self, tmp_path: Path
     ) -> None:
         """音声データを文字起こしし、LLMで応答を生成し、音声で読み上げる."""
         # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
+        mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
+        mock_llm = create_autospec(LLMPort, instance=True, spec_set=True)
+        mock_bargein = create_autospec(BargeInDetector, instance=True, spec_set=True)
 
         mock_stt.transcribe.return_value = TranscribeResult(
             text="こんにちは", no_speech_prob=0.1
@@ -38,15 +38,14 @@ class TestChatOrchestrator:
         mock_llm.generate.assert_called_once()
         mock_bargein.monitor.assert_called_once_with("こんにちは！何かお手伝いできますか？")
 
-    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_includes_conversation_history(
-        self, mock_save_wav: MagicMock, tmp_path: Path
+        self, tmp_path: Path
     ) -> None:
         """会話履歴を含めてLLMに送信する."""
         # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
+        mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
+        mock_llm = create_autospec(LLMPort, instance=True, spec_set=True)
+        mock_bargein = create_autospec(BargeInDetector, instance=True, spec_set=True)
 
         mock_stt.transcribe.side_effect = [
             TranscribeResult(text="こんにちは", no_speech_prob=0.1),
@@ -78,17 +77,16 @@ class TestChatOrchestrator:
             role="user", content="今日の天気は？"
         )
 
-    @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_skips_silent_audio(
-        self, mock_save_wav: MagicMock, tmp_path: Path
+        self, tmp_path: Path
     ) -> None:
         """無音の場合はLLM呼び出しをスキップする."""
         # Arrange
         from voivoi.chat.stt.port import SilentAudioError
 
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
+        mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
+        mock_llm = create_autospec(LLMPort, instance=True, spec_set=True)
+        mock_bargein = create_autospec(BargeInDetector, instance=True, spec_set=True)
 
         mock_stt.transcribe.side_effect = SilentAudioError("無音")
 
@@ -106,9 +104,9 @@ class TestChatOrchestrator:
     def test_get_chat_returns_empty_chat_initially(self, tmp_path: Path) -> None:
         """会話開始前は空のChatを返す."""
         # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
+        mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
+        mock_llm = create_autospec(LLMPort, instance=True, spec_set=True)
+        mock_bargein = create_autospec(BargeInDetector, instance=True, spec_set=True)
 
         voice_chat = ChatOrchestrator(
             stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
@@ -120,15 +118,14 @@ class TestChatOrchestrator:
         # Assert
         assert chat.messages == []
 
-    @patch("voivoi.chat.orchestrator.save_wav")
     def test_get_chat_returns_conversation_history(
-        self, mock_save_wav: MagicMock, tmp_path: Path
+        self, tmp_path: Path
     ) -> None:
         """音声入力ごとにユーザー発話とAI応答がChatに追加される."""
         # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
+        mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
+        mock_llm = create_autospec(LLMPort, instance=True, spec_set=True)
+        mock_bargein = create_autospec(BargeInDetector, instance=True, spec_set=True)
 
         mock_stt.transcribe.return_value = TranscribeResult(
             text="こんにちは", no_speech_prob=0.1
@@ -149,28 +146,3 @@ class TestChatOrchestrator:
         assert chat.messages[0].content == "こんにちは"
         assert chat.messages[1].role == "assistant"
         assert chat.messages[1].content == "こんにちは！"
-
-    @patch("voivoi.chat.orchestrator.save_wav")
-    def test_process_audio_calls_bargein_monitor(
-        self, mock_save_wav: MagicMock, tmp_path: Path
-    ) -> None:
-        """応答テキストをbargein_detector.monitor()で再生する."""
-        # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_bargein = MagicMock()
-
-        mock_stt.transcribe.return_value = TranscribeResult(
-            text="こんにちは", no_speech_prob=0.1
-        )
-        mock_llm.generate.return_value = "こんにちは！"
-
-        voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
-        )
-
-        # Act
-        voice_chat.process_audio(b"audio_data")
-
-        # Assert
-        mock_bargein.monitor.assert_called_once_with("こんにちは！")
