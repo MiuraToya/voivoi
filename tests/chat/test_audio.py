@@ -52,7 +52,9 @@ class TestPyAudioAdapter:
         mock_stream.read.assert_called_once_with(1024 * 3, exception_on_overflow=False)
 
     @patch("voivoi.chat.audio.adapter.pyaudio")
-    def test_flush_does_nothing_when_buffer_empty(self, mock_pyaudio: MagicMock) -> None:
+    def test_flush_does_nothing_when_buffer_empty(
+        self, mock_pyaudio: MagicMock
+    ) -> None:
         """バッファが空の場合、flush()は何もしない."""
         # Arrange
         mock_pa = MagicMock()

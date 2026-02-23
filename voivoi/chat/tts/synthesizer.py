@@ -29,9 +29,12 @@ class MacSaySynthesizer:
         subprocess.run(
             [
                 "afconvert",
-                "-f", "WAVE",
-                "-d", "LEI16@16000",
-                "-c", "1",
+                "-f",
+                "WAVE",
+                "-d",
+                "LEI16@16000",
+                "-c",
+                "1",
                 str(aiff_path),
                 str(wav_path),
             ],

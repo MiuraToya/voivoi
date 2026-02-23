@@ -199,7 +199,16 @@ class TestBargeInDetector:
         mock_synthesizer.synthesize.return_value = pcm_data
         mock_recorder.read_chunk.return_value = (_silent_chunk(), 0.0)
         mock_echo_canceller.cancel.side_effect = [
-            0.15, 0.15, 0.001, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+            0.15,
+            0.15,
+            0.001,
+            0.15,
+            0.15,
+            0.15,
+            0.15,
+            0.15,
+            0.15,
+            0.15,
         ]
         mock_vad.is_speech.side_effect = lambda level: level > 0.02
 

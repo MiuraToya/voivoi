@@ -28,9 +28,7 @@ class TestPyttsx3Adapter:
         mock_engine.runAndWait.assert_called_once()
 
     @patch("voivoi.chat.tts.adapter.pyttsx3")
-    def test_stop_calls_engine_stop_during_speak(
-        self, mock_pyttsx3: MagicMock
-    ) -> None:
+    def test_stop_calls_engine_stop_during_speak(self, mock_pyttsx3: MagicMock) -> None:
         """speak中にstop()を呼ぶとengine.stop()が実行される."""
         # Arrange
         mock_engine = MagicMock()

@@ -24,7 +24,9 @@ class OllamaAdapter:
         try:
             ollama_messages: list[dict[str, str]] = []
             if self._system_prompt:
-                ollama_messages.append({"role": "system", "content": self._system_prompt})
+                ollama_messages.append(
+                    {"role": "system", "content": self._system_prompt}
+                )
             ollama_messages.extend(
                 {"role": m.role, "content": m.content} for m in messages
             )
