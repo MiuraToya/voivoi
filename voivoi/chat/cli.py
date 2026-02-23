@@ -1,5 +1,6 @@
 """Chat CLI コマンド."""
 
+import logging
 from pathlib import Path
 
 import typer
@@ -40,10 +41,20 @@ def save_session(chat: Chat, chats_dir: Path) -> None:
 
 
 @app.callback(invoke_without_command=True)
-def chat_start(ctx: typer.Context) -> None:
+def chat_start(
+    ctx: typer.Context,
+    debug: bool = typer.Option(False, "--debug", help="デバッグログを出力する"),
+) -> None:
     """Start voice chat (default command)."""
     if ctx.invoked_subcommand is not None:
         return
+
+    if debug:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("  [%(name)s] %(message)s"))
+        voivoi_logger = logging.getLogger("voivoi")
+        voivoi_logger.setLevel(logging.DEBUG)
+        voivoi_logger.addHandler(handler)
 
     # 設定を読み込む（存在しない場合はデフォルト設定を使用）
     config = load_config(get_config_file())
