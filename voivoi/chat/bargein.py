@@ -7,7 +7,7 @@ import logging
 from voivoi.chat.audio.echo import EchoCanceller
 from voivoi.chat.audio.player import AudioPlayerPort
 from voivoi.chat.audio.port import AudioRecorderPort
-from voivoi.chat.audio.vad import VADPort
+from voivoi.chat.audio.vad import ThresholdVAD
 from voivoi.chat.tts.port import TTSSynthesizerPort
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class BargeInDetector:
         synthesizer: TTSSynthesizerPort,
         player: AudioPlayerPort,
         echo_canceller: EchoCanceller,
-        vad: VADPort,
+        vad: ThresholdVAD,
         *,
         warmup_chunks: int = DEFAULT_WARMUP_CHUNKS,
         min_speech_frames: int = DEFAULT_MIN_SPEECH_FRAMES,

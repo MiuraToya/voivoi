@@ -2,15 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol
-
 DEFAULT_THRESHOLD: float = 0.02
-
-
-class VADPort(Protocol):
-    """VADプロバイダーのインターフェース（依存注入用）."""
-
-    def is_speech(self, audio_level: float) -> bool: ...
 
 
 class ThresholdVAD:
