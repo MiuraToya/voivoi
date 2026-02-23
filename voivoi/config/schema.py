@@ -11,6 +11,7 @@ class LLMModel(StrEnum):
     LLAMA3_1 = "llama3.1"
     LLAMA3_2 = "llama3.2"
     GEMMA2 = "gemma2"
+    GEMMA3 = "gemma3"
     PHI3 = "phi3"
     MISTRAL = "mistral"
 
@@ -27,7 +28,7 @@ class LLMConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    model: LLMModel = LLMModel.LLAMA3_1
+    model: LLMModel = LLMModel.GEMMA3
 
 
 class STTConfig(BaseModel):
@@ -36,7 +37,7 @@ class STTConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     language: STTLanguage = STTLanguage.JA
-    model: str = "base"
+    model: str = "medium"
 
 
 class TTSConfig(BaseModel):

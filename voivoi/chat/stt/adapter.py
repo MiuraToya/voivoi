@@ -38,7 +38,9 @@ class WhisperAdapter:
         """
         # fp16=False でCPU使用時の警告を抑制
         raw_result = self._model.transcribe(
-            str(audio_path), language=self._language, fp16=False
+            str(audio_path),
+            language=self._language,
+            fp16=False,
         )
         result = WhisperOutput(
             text=raw_result["text"],
