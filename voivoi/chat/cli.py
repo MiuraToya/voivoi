@@ -5,8 +5,11 @@ from pathlib import Path
 import typer
 
 from voivoi.chat.audio.adapter import PyAudioAdapter
+from voivoi.chat.audio.echo import EchoCanceller
 from voivoi.chat.audio.listener import ContinuousListener
+from voivoi.chat.audio.player import PyAudioPlayer
 from voivoi.chat.audio.vad import ThresholdVAD
+from voivoi.chat.bargein import BargeInDetector
 from voivoi.chat.domain.models import Chat
 from voivoi.chat.domain.paths import get_chats_dir
 from voivoi.chat.domain.repository import list_chats, load_chat, save_chat
@@ -14,6 +17,7 @@ from voivoi.chat.llm.adapter import OllamaAdapter
 from voivoi.chat.orchestrator import ChatOrchestrator
 from voivoi.chat.stt.adapter import WhisperAdapter
 from voivoi.chat.tts.adapter import Pyttsx3Adapter
+from voivoi.chat.tts.synthesizer import MacSaySynthesizer
 from voivoi.chat.ui import (
     print_ai_message,
     print_info,
@@ -54,12 +58,24 @@ def chat_start(ctx: typer.Context) -> None:
     tts = Pyttsx3Adapter()
     vad = ThresholdVAD()
 
-    voice_chat = ChatOrchestrator(stt=stt, llm=llm, tts=tts)
-
     print_info("Voice chat started. Press Ctrl+C to exit.")
     print_status("Listening...")
 
     with PyAudioAdapter() as recorder:
+        synthesizer = MacSaySynthesizer()
+        player = PyAudioPlayer()
+        echo_canceller = EchoCanceller()
+        bargein_vad = ThresholdVAD(threshold=0.05)
+        bargein = BargeInDetector(
+            recorder=recorder,
+            synthesizer=synthesizer,
+            player=player,
+            echo_canceller=echo_canceller,
+            vad=bargein_vad,
+        )
+        voice_chat = ChatOrchestrator(
+            stt=stt, llm=llm, tts=tts, bargein_detector=bargein
+        )
         listener = ContinuousListener(recorder=recorder, vad=vad)
 
         try:

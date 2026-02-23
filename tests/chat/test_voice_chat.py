@@ -149,3 +149,59 @@ class TestChatOrchestrator:
         assert chat.messages[0].content == "こんにちは"
         assert chat.messages[1].role == "assistant"
         assert chat.messages[1].content == "こんにちは！"
+
+    @patch("voivoi.chat.orchestrator.save_wav")
+    def test_process_audio_uses_bargein_detector_when_provided(
+        self, mock_save_wav: MagicMock, tmp_path: Path
+    ) -> None:
+        """bargein_detectorが設定されている場合、monitor()経由でTTSを実行する."""
+        # Arrange
+        mock_stt = MagicMock()
+        mock_llm = MagicMock()
+        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
+
+        mock_stt.transcribe.return_value = TranscribeResult(
+            text="こんにちは", no_speech_prob=0.1
+        )
+        mock_llm.generate.return_value = "こんにちは！"
+
+        voice_chat = ChatOrchestrator(
+            stt=mock_stt,
+            llm=mock_llm,
+            tts=mock_tts,
+            temp_dir=tmp_path,
+            bargein_detector=mock_bargein,
+        )
+
+        # Act
+        voice_chat.process_audio(b"audio_data")
+
+        # Assert
+        mock_bargein.monitor.assert_called_once_with("こんにちは！")
+        mock_tts.speak.assert_not_called()
+
+    @patch("voivoi.chat.orchestrator.save_wav")
+    def test_process_audio_uses_tts_directly_without_bargein_detector(
+        self, mock_save_wav: MagicMock, tmp_path: Path
+    ) -> None:
+        """bargein_detectorがない場合、従来通りtts.speak()を呼ぶ."""
+        # Arrange
+        mock_stt = MagicMock()
+        mock_llm = MagicMock()
+        mock_tts = MagicMock()
+
+        mock_stt.transcribe.return_value = TranscribeResult(
+            text="こんにちは", no_speech_prob=0.1
+        )
+        mock_llm.generate.return_value = "こんにちは！"
+
+        voice_chat = ChatOrchestrator(
+            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+        )
+
+        # Act
+        voice_chat.process_audio(b"audio_data")
+
+        # Assert
+        mock_tts.speak.assert_called_once_with("こんにちは！")

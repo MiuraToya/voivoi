@@ -62,8 +62,16 @@ class TestChatStart:
     @patch("voivoi.chat.cli.OllamaAdapter")
     @patch("voivoi.chat.cli.Pyttsx3Adapter")
     @patch("voivoi.chat.cli.ChatOrchestrator")
+    @patch("voivoi.chat.cli.MacSaySynthesizer")
+    @patch("voivoi.chat.cli.PyAudioPlayer")
+    @patch("voivoi.chat.cli.EchoCanceller")
+    @patch("voivoi.chat.cli.BargeInDetector")
     def test_chat_start_initializes_and_runs_voice_chat(
         self,
+        mock_bargein_class: MagicMock,
+        mock_echo_class: MagicMock,
+        mock_player_class: MagicMock,
+        mock_synth_class: MagicMock,
         mock_voice_chat_class: MagicMock,
         mock_tts_class: MagicMock,
         mock_llm_class: MagicMock,
@@ -99,12 +107,18 @@ class TestChatStart:
         # Assert
         assert result.exit_code == 0
         mock_recorder_class.assert_called_once()
-        mock_vad_class.assert_called_once()
+        # ThresholdVAD: リスナー用 + バージイン用
+        assert mock_vad_class.call_count == 2
         mock_listener_class.assert_called_once()
         mock_stt_class.assert_called_once()
         mock_llm_class.assert_called_once()
         mock_tts_class.assert_called_once()
         mock_voice_chat_class.assert_called_once()
+        # エコーキャンセレーション関連
+        mock_synth_class.assert_called_once()
+        mock_player_class.assert_called_once()
+        mock_echo_class.assert_called_once()
+        mock_bargein_class.assert_called_once()
 
 
 class TestChatList:

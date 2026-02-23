@@ -40,6 +40,12 @@ class PyAudioAdapter:
         level = self._calculate_level(data)
         return data, level
 
+    def flush(self) -> None:
+        """入力バッファに蓄積された音声データを破棄する."""
+        available = self._stream.get_read_available()
+        if available > 0:
+            self._stream.read(available, exception_on_overflow=False)
+
     def _calculate_level(self, data: bytes) -> float:
         """音声データから正規化された音量レベル（0.0〜1.0）を計算する."""
         # 16-bit signed integerとしてアンパック
