@@ -10,7 +10,6 @@ from voivoi.chat.bargein import BargeInDetector
 from voivoi.chat.domain.models import Chat
 from voivoi.chat.llm.port import LLMMessage, LLMPort
 from voivoi.chat.stt.port import SilentAudioError, STTPort
-from voivoi.chat.tts.port import TTSPort
 from voivoi.chat.ui import print_ai_message, print_user_message
 
 
@@ -21,15 +20,13 @@ class ChatOrchestrator:
         self,
         stt: STTPort,
         llm: LLMPort,
-        tts: TTSPort,
+        bargein_detector: BargeInDetector,
         temp_dir: Path | None = None,
-        bargein_detector: BargeInDetector | None = None,
     ) -> None:
         self._stt = stt
         self._llm = llm
-        self._tts = tts
-        self._temp_dir = temp_dir or Path(tempfile.gettempdir())
         self._bargein_detector = bargein_detector
+        self._temp_dir = temp_dir or Path(tempfile.gettempdir())
         self._chat = Chat.create()
 
     def process_audio(self, audio_data: bytes) -> None:
@@ -61,10 +58,7 @@ class ChatOrchestrator:
         self._chat.add_message("assistant", response)
 
         # TTS: テキスト→音声（バージイン対応）
-        if self._bargein_detector is not None:
-            self._bargein_detector.monitor(response)
-        else:
-            self._tts.speak(response)
+        self._bargein_detector.monitor(response)
 
     def get_chat(self) -> Chat:
         """会話履歴を取得する."""

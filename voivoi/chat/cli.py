@@ -17,7 +17,6 @@ from voivoi.chat.domain.repository import list_chats, load_chat, save_chat
 from voivoi.chat.llm.adapter import OllamaAdapter
 from voivoi.chat.orchestrator import ChatOrchestrator
 from voivoi.chat.stt.adapter import WhisperAdapter
-from voivoi.chat.tts.adapter import Pyttsx3Adapter
 from voivoi.chat.tts.synthesizer import MacSaySynthesizer
 from voivoi.chat.ui import (
     print_ai_message,
@@ -66,7 +65,6 @@ def chat_start(
     # 各コンポーネントを初期化
     stt = WhisperAdapter(model_name=config.stt.model, language=config.stt.language)
     llm = OllamaAdapter(model=config.llm.model, system_prompt=config.llm.system_prompt)
-    tts = Pyttsx3Adapter()
     vad = ThresholdVAD()
 
     print_info("Voice chat started. Press Ctrl+C to exit.")
@@ -85,7 +83,7 @@ def chat_start(
             vad=bargein_vad,
         )
         voice_chat = ChatOrchestrator(
-            stt=stt, llm=llm, tts=tts, bargein_detector=bargein
+            stt=stt, llm=llm, bargein_detector=bargein
         )
         listener = ContinuousListener(recorder=recorder, vad=vad)
 

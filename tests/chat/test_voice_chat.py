@@ -19,7 +19,7 @@ class TestChatOrchestrator:
         # Arrange
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
 
         mock_stt.transcribe.return_value = TranscribeResult(
             text="こんにちは", no_speech_prob=0.1
@@ -27,7 +27,7 @@ class TestChatOrchestrator:
         mock_llm.generate.return_value = "こんにちは！何かお手伝いできますか？"
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -36,7 +36,7 @@ class TestChatOrchestrator:
         # Assert
         mock_stt.transcribe.assert_called_once()
         mock_llm.generate.assert_called_once()
-        mock_tts.speak.assert_called_once_with("こんにちは！何かお手伝いできますか？")
+        mock_bargein.monitor.assert_called_once_with("こんにちは！何かお手伝いできますか？")
 
     @patch("voivoi.chat.orchestrator.save_wav")
     def test_process_audio_includes_conversation_history(
@@ -46,7 +46,7 @@ class TestChatOrchestrator:
         # Arrange
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
 
         mock_stt.transcribe.side_effect = [
             TranscribeResult(text="こんにちは", no_speech_prob=0.1),
@@ -58,7 +58,7 @@ class TestChatOrchestrator:
         ]
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -88,12 +88,12 @@ class TestChatOrchestrator:
 
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
 
         mock_stt.transcribe.side_effect = SilentAudioError("無音")
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -101,17 +101,17 @@ class TestChatOrchestrator:
 
         # Assert
         mock_llm.generate.assert_not_called()
-        mock_tts.speak.assert_not_called()
+        mock_bargein.monitor.assert_not_called()
 
     def test_get_chat_returns_empty_chat_initially(self, tmp_path: Path) -> None:
         """会話開始前は空のChatを返す."""
         # Arrange
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -128,7 +128,7 @@ class TestChatOrchestrator:
         # Arrange
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
+        mock_bargein = MagicMock()
 
         mock_stt.transcribe.return_value = TranscribeResult(
             text="こんにちは", no_speech_prob=0.1
@@ -136,7 +136,7 @@ class TestChatOrchestrator:
         mock_llm.generate.return_value = "こんにちは！"
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -151,14 +151,13 @@ class TestChatOrchestrator:
         assert chat.messages[1].content == "こんにちは！"
 
     @patch("voivoi.chat.orchestrator.save_wav")
-    def test_process_audio_uses_bargein_detector_when_provided(
+    def test_process_audio_calls_bargein_monitor(
         self, mock_save_wav: MagicMock, tmp_path: Path
     ) -> None:
-        """bargein_detectorが設定されている場合、monitor()経由でTTSを実行する."""
+        """応答テキストをbargein_detector.monitor()で再生する."""
         # Arrange
         mock_stt = MagicMock()
         mock_llm = MagicMock()
-        mock_tts = MagicMock()
         mock_bargein = MagicMock()
 
         mock_stt.transcribe.return_value = TranscribeResult(
@@ -167,11 +166,7 @@ class TestChatOrchestrator:
         mock_llm.generate.return_value = "こんにちは！"
 
         voice_chat = ChatOrchestrator(
-            stt=mock_stt,
-            llm=mock_llm,
-            tts=mock_tts,
-            temp_dir=tmp_path,
-            bargein_detector=mock_bargein,
+            stt=mock_stt, llm=mock_llm, bargein_detector=mock_bargein, temp_dir=tmp_path
         )
 
         # Act
@@ -179,29 +174,3 @@ class TestChatOrchestrator:
 
         # Assert
         mock_bargein.monitor.assert_called_once_with("こんにちは！")
-        mock_tts.speak.assert_not_called()
-
-    @patch("voivoi.chat.orchestrator.save_wav")
-    def test_process_audio_uses_tts_directly_without_bargein_detector(
-        self, mock_save_wav: MagicMock, tmp_path: Path
-    ) -> None:
-        """bargein_detectorがない場合、従来通りtts.speak()を呼ぶ."""
-        # Arrange
-        mock_stt = MagicMock()
-        mock_llm = MagicMock()
-        mock_tts = MagicMock()
-
-        mock_stt.transcribe.return_value = TranscribeResult(
-            text="こんにちは", no_speech_prob=0.1
-        )
-        mock_llm.generate.return_value = "こんにちは！"
-
-        voice_chat = ChatOrchestrator(
-            stt=mock_stt, llm=mock_llm, tts=mock_tts, temp_dir=tmp_path
-        )
-
-        # Act
-        voice_chat.process_audio(b"audio_data")
-
-        # Assert
-        mock_tts.speak.assert_called_once_with("こんにちは！")

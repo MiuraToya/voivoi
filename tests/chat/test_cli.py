@@ -60,7 +60,6 @@ class TestChatStart:
     @patch("voivoi.chat.cli.ContinuousListener")
     @patch("voivoi.chat.cli.WhisperAdapter")
     @patch("voivoi.chat.cli.OllamaAdapter")
-    @patch("voivoi.chat.cli.Pyttsx3Adapter")
     @patch("voivoi.chat.cli.ChatOrchestrator")
     @patch("voivoi.chat.cli.MacSaySynthesizer")
     @patch("voivoi.chat.cli.PyAudioPlayer")
@@ -73,7 +72,6 @@ class TestChatStart:
         mock_player_class: MagicMock,
         mock_synth_class: MagicMock,
         mock_voice_chat_class: MagicMock,
-        mock_tts_class: MagicMock,
         mock_llm_class: MagicMock,
         mock_stt_class: MagicMock,
         mock_listener_class: MagicMock,
@@ -112,7 +110,6 @@ class TestChatStart:
         mock_listener_class.assert_called_once()
         mock_stt_class.assert_called_once()
         mock_llm_class.assert_called_once()
-        mock_tts_class.assert_called_once()
         mock_voice_chat_class.assert_called_once()
         # エコーキャンセレーション関連
         mock_synth_class.assert_called_once()
