@@ -78,7 +78,7 @@ class TestSaveConfig:
         # Assert
         assert config_file.exists()
         content = config_file.read_text()
-        assert 'model = "llama3.1"' in content
+        assert 'model = "gemma3"' in content
         assert 'language = "ja"' in content
         assert "enabled = true" in content
 

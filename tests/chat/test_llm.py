@@ -112,6 +112,45 @@ class TestOllamaAdapter:
         )
         assert result == "東京です"
 
+    @patch("voivoi.chat.llm.adapter.ollama")
+    def test_generate_prepends_system_prompt(self, mock_ollama: MagicMock) -> None:
+        """system_prompt が設定されている場合、メッセージ先頭に system メッセージを挿入する."""
+        # Arrange
+        mock_ollama.chat.return_value = {"message": {"content": "了解にゃ"}}
+        llm = OllamaAdapter(model="gemma3", system_prompt="猫語で話して")
+        messages = [LLMMessage(role="user", content="こんにちは")]
+
+        # Act
+        llm.generate(messages)
+
+        # Assert
+        mock_ollama.chat.assert_called_once_with(
+            model="gemma3",
+            messages=[
+                {"role": "system", "content": "猫語で話して"},
+                {"role": "user", "content": "こんにちは"},
+            ],
+        )
+
+    @patch("voivoi.chat.llm.adapter.ollama")
+    def test_generate_without_system_prompt_sends_only_user_messages(
+        self, mock_ollama: MagicMock
+    ) -> None:
+        """system_prompt が未設定の場合、system メッセージを挿入しない."""
+        # Arrange
+        mock_ollama.chat.return_value = {"message": {"content": "応答"}}
+        llm = OllamaAdapter(model="gemma3")
+        messages = [LLMMessage(role="user", content="テスト")]
+
+        # Act
+        llm.generate(messages)
+
+        # Assert
+        mock_ollama.chat.assert_called_once_with(
+            model="gemma3",
+            messages=[{"role": "user", "content": "テスト"}],
+        )
+
 
 class TestLLMConnectionError:
     """LLMConnectionErrorのテスト."""

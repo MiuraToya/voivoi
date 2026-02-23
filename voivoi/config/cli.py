@@ -14,6 +14,7 @@ def _print_config(config: Config) -> None:
     typer.echo()
     typer.echo(typer.style("  LLM", bold=True))
     typer.echo(f"    model: {config.llm.model}")
+    typer.echo(f"    system_prompt: {config.llm.system_prompt}")
     typer.echo()
     typer.echo(typer.style("  STT", bold=True))
     typer.echo(f"    language: {config.stt.language}")

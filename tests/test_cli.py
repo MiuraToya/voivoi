@@ -44,7 +44,7 @@ class TestConfigInit:
             result = runner.invoke(app, ["config", "init"])
 
         # Assert
-        assert "llama3.1" in result.stdout
+        assert "gemma3" in result.stdout
         assert "ja" in result.stdout
         assert "true" in result.stdout.lower()
 

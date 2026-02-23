@@ -50,7 +50,7 @@ def chat_start(ctx: typer.Context) -> None:
 
     # 各コンポーネントを初期化
     stt = WhisperAdapter(model_name=config.stt.model, language=config.stt.language)
-    llm = OllamaAdapter(model=config.llm.model)
+    llm = OllamaAdapter(model=config.llm.model, system_prompt=config.llm.system_prompt)
     tts = Pyttsx3Adapter()
     vad = ThresholdVAD()
 

@@ -17,12 +17,32 @@ class TestLLMConfig:
     """LLMConfig のテスト."""
 
     def test_llm_config_has_default_model(self) -> None:
-        """デフォルトモデルが llama3.1 であること."""
+        """デフォルトモデルが gemma3 であること."""
         # Act
         config = LLMConfig()
 
         # Assert
-        assert config.model == "llama3.1"
+        assert config.model == "gemma3"
+
+    def test_llm_config_has_default_system_prompt(self) -> None:
+        """デフォルトの system_prompt が設定されていること."""
+        # Act
+        config = LLMConfig()
+
+        # Assert
+        assert config.system_prompt is not None
+        assert len(config.system_prompt) > 0
+
+    def test_llm_config_accepts_custom_system_prompt(self) -> None:
+        """カスタム system_prompt を設定できること."""
+        # Arrange
+        custom_prompt = "あなたは猫です。語尾に「にゃ」をつけてください。"
+
+        # Act
+        config = LLMConfig(system_prompt=custom_prompt)
+
+        # Assert
+        assert config.system_prompt == custom_prompt
 
     def test_llm_config_accepts_valid_model(self) -> None:
         """許可されたモデル名を受け入れること."""
@@ -68,7 +88,7 @@ class TestSTTConfig:
         config = STTConfig()
 
         # Assert
-        assert config.model == "base"
+        assert config.model == "medium"
 
     def test_stt_config_accepts_valid_model_names(self) -> None:
         """有効なモデル名を受け入れること."""
@@ -102,7 +122,7 @@ class TestConfig:
         config = Config()
 
         # Assert
-        assert config.llm.model == "llama3.1"
+        assert config.llm.model == "gemma3"
         assert config.stt.language == "ja"
         assert config.tts.enabled is True
 

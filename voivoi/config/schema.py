@@ -29,6 +29,7 @@ class LLMConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     model: LLMModel = LLMModel.GEMMA3
+    system_prompt: str = "あなたは音声アシスタントです。簡潔に日本語で応答してください。"
 
 
 class STTConfig(BaseModel):
