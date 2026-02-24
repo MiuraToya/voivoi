@@ -82,9 +82,7 @@ def chat_start(
             echo_canceller=echo_canceller,
             vad=bargein_vad,
         )
-        voice_chat = ChatOrchestrator(
-            stt=stt, llm=llm, bargein_detector=bargein
-        )
+        voice_chat = ChatOrchestrator(stt=stt, llm=llm, bargein_detector=bargein)
         listener = ContinuousListener(recorder=recorder, vad=vad)
 
         try:

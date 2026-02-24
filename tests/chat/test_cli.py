@@ -85,9 +85,7 @@ class TestChatStart:
 
         mock_load_config.return_value = Config()
 
-        mock_recorder_class.return_value.__enter__ = MagicMock(
-            return_value=MagicMock()
-        )
+        mock_recorder_class.return_value.__enter__ = MagicMock(return_value=MagicMock())
         mock_recorder_class.return_value.__exit__ = MagicMock(return_value=False)
 
         mock_listener = MagicMock()

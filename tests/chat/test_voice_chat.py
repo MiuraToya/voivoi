@@ -36,11 +36,11 @@ class TestChatOrchestrator:
         # Assert
         mock_stt.transcribe.assert_called_once()
         mock_llm.generate.assert_called_once()
-        mock_bargein.monitor.assert_called_once_with("こんにちは！何かお手伝いできますか？")
+        mock_bargein.monitor.assert_called_once_with(
+            "こんにちは！何かお手伝いできますか？"
+        )
 
-    def test_process_audio_includes_conversation_history(
-        self, tmp_path: Path
-    ) -> None:
+    def test_process_audio_includes_conversation_history(self, tmp_path: Path) -> None:
         """会話履歴を含めてLLMに送信する."""
         # Arrange
         mock_stt = create_autospec(STTPort, instance=True, spec_set=True)
@@ -77,9 +77,7 @@ class TestChatOrchestrator:
             role="user", content="今日の天気は？"
         )
 
-    def test_process_audio_skips_silent_audio(
-        self, tmp_path: Path
-    ) -> None:
+    def test_process_audio_skips_silent_audio(self, tmp_path: Path) -> None:
         """無音の場合はLLM呼び出しをスキップする."""
         # Arrange
         from voivoi.chat.stt.port import SilentAudioError
@@ -118,9 +116,7 @@ class TestChatOrchestrator:
         # Assert
         assert chat.messages == []
 
-    def test_get_chat_returns_conversation_history(
-        self, tmp_path: Path
-    ) -> None:
+    def test_get_chat_returns_conversation_history(self, tmp_path: Path) -> None:
         """音声入力ごとにユーザー発話とAI応答がChatに追加される."""
         # Arrange
         mock_stt = create_autospec(STTPort, instance=True, spec_set=True)

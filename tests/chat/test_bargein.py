@@ -30,7 +30,9 @@ class TestBargeInDetector:
     def test_monitor_plays_all_chunks_when_no_speech(self) -> None:
         """発話が検出されない場合、全チャンクが再生される."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -59,7 +61,9 @@ class TestBargeInDetector:
     def test_monitor_stops_when_speech_detected(self) -> None:
         """マイクにユーザー音声が入ると再生を停止する."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -88,7 +92,9 @@ class TestBargeInDetector:
     def test_monitor_flushes_input_buffer_before_playback(self) -> None:
         """再生開始前に入力バッファをフラッシュする."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -114,7 +120,9 @@ class TestBargeInDetector:
     def test_monitor_skips_vad_during_warmup(self) -> None:
         """ウォームアップ期間中はVAD判定をスキップする."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -143,7 +151,9 @@ class TestBargeInDetector:
     def test_monitor_requires_consecutive_speech_frames(self) -> None:
         """連続した発話フレームが規定回数に達しないと停止しない."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -153,7 +163,7 @@ class TestBargeInDetector:
         mic_responses = [
             (_tone_chunk(8000), 0.0),  # chunk 0: speech
             (_tone_chunk(8000), 0.0),  # chunk 1: speech
-            (_silent_chunk(), 0.0),    # chunk 2: silence → reset
+            (_silent_chunk(), 0.0),  # chunk 2: silence → reset
             (_tone_chunk(8000), 0.0),  # chunk 3: speech
             (_tone_chunk(8000), 0.0),  # chunk 4: speech
             (_tone_chunk(8000), 0.0),  # chunk 5: speech → 3連続達成
@@ -184,7 +194,9 @@ class TestBargeInDetector:
     def test_monitor_uses_default_warmup_and_debounce(self) -> None:
         """デフォルト設定（warmup=3, min_speech_frames=2）で動作する."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
 
@@ -211,10 +223,14 @@ class TestBargeInDetector:
     def test_monitor_limits_ref_buffer_size(self) -> None:
         """ref_bufferがmax_ref_chunksに制限される."""
         # Arrange
-        mock_synthesizer = create_autospec(TTSSynthesizerPort, instance=True, spec_set=True)
+        mock_synthesizer = create_autospec(
+            TTSSynthesizerPort, instance=True, spec_set=True
+        )
         mock_player = create_autospec(AudioPlayerPort, instance=True, spec_set=True)
         mock_recorder = create_autospec(AudioRecorderPort, instance=True, spec_set=True)
-        mock_echo_canceller = create_autospec(EchoCanceller, instance=True, spec_set=True)
+        mock_echo_canceller = create_autospec(
+            EchoCanceller, instance=True, spec_set=True
+        )
 
         # 5チャンク分のPCMデータ（各チャンク異なるバイト）
         chunks = [bytes([i]) * CHUNK_BYTES for i in range(1, 6)]
