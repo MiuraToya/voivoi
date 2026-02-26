@@ -2,18 +2,7 @@
 
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict
-
-
-class LLMModel(StrEnum):
-    """許可されたLLMモデル."""
-
-    LLAMA3_1 = "llama3.1"
-    LLAMA3_2 = "llama3.2"
-    GEMMA2 = "gemma2"
-    GEMMA3 = "gemma3"
-    PHI3 = "phi3"
-    MISTRAL = "mistral"
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class STTLanguage(StrEnum):
@@ -28,10 +17,19 @@ class LLMConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    model: LLMModel = LLMModel.GEMMA3
+    model: str = "gemma3"
     system_prompt: str = (
         "あなたは音声アシスタントです。簡潔に日本語で応答してください。"
     )
+
+    @field_validator("model")
+    @classmethod
+    def model_must_not_be_blank(cls, v: str) -> str:
+        """モデル名が空でないことを検証する."""
+        if not v.strip():
+            msg = "モデル名は空にできません"
+            raise ValueError(msg)
+        return v
 
 
 class STTConfig(BaseModel):

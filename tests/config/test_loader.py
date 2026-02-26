@@ -56,7 +56,7 @@ class TestLoadConfig:
         """不正な値が含まれる場合、エラーを発生させること."""
         # Arrange
         config_file = tmp_path / "config.toml"
-        config_file.write_text('[llm]\nmodel = "invalid-model"\n')
+        config_file.write_text('[llm]\nmodel = ""\n')
 
         # Act & Assert
         with pytest.raises(Exception):

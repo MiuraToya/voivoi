@@ -6,7 +6,6 @@ from pydantic import ValidationError
 from voivoi.config.schema import (
     Config,
     LLMConfig,
-    LLMModel,
     STTConfig,
     STTLanguage,
     TTSConfig,
@@ -44,18 +43,37 @@ class TestLLMConfig:
         # Assert
         assert config.system_prompt == custom_prompt
 
-    def test_llm_config_accepts_valid_model(self) -> None:
-        """許可されたモデル名を受け入れること."""
-        # Act & Assert
-        for model in LLMModel:
-            config = LLMConfig(model=model)
-            assert config.model == model
-
-    def test_llm_config_rejects_invalid_model(self) -> None:
-        """許可されていないモデル名を拒否すること."""
+    def test_llm_config_rejects_empty_model_name(self) -> None:
+        """空文字列のモデル名を拒否すること."""
         # Act & Assert
         with pytest.raises(ValidationError):
-            LLMConfig(model="invalid-model")  # type: ignore[arg-type]
+            LLMConfig(model="")
+
+    def test_llm_config_rejects_whitespace_only_model_name(self) -> None:
+        """空白のみのモデル名を拒否すること."""
+        # Act & Assert
+        with pytest.raises(ValidationError):
+            LLMConfig(model="  ")
+
+    def test_llm_config_accepts_any_model_name(self) -> None:
+        """任意のモデル名を受け入れること."""
+        # Arrange
+        models = [
+            "gemma3",
+            "llama3.1",
+            "llama3.2",
+            "deepseek-r1",
+            "qwen2.5",
+            "codellama:13b",
+            "phi3",
+            "mistral",
+            "command-r",
+        ]
+
+        # Act & Assert
+        for model in models:
+            config = LLMConfig(model=model)
+            assert config.model == model
 
 
 class TestSTTConfig:
@@ -129,7 +147,7 @@ class TestConfig:
     def test_config_accepts_partial_override(self) -> None:
         """一部の値のみオーバーライドできること."""
         # Arrange
-        llm = LLMConfig(model=LLMModel.GEMMA2)
+        llm = LLMConfig(model="gemma2")
 
         # Act
         config = Config(llm=llm)

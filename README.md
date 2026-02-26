@@ -36,7 +36,7 @@ brew services start ollama
 ollama serve
 
 # 使用するモデルをダウンロード（初回のみ）
-ollama pull llama3.1
+ollama pull gemma3
 ```
 
 ### 2. システム依存のインストール
@@ -93,7 +93,7 @@ uv run voivoi config init
 
 ```toml
 [llm]
-model = "llama3.1"    # llama3.1, llama3.2, gemma2, phi3, mistral
+model = "gemma3"      # Ollamaで利用可能な任意のモデル名
 
 [stt]
 language = "ja"       # ja, en
