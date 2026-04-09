@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>voivoi - ローカル音声LLMアプリ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eee;
+    --muted: #999;
+    --green: #4ade80;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --yellow: #fbbf24;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ===== Slide sections ===== */
+  section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 48px 40px;
+    position: relative;
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    text-align: center;
+    padding: 64px 40px;
+    background: radial-gradient(ellipse at 50% 40%, rgba(233,69,96,.15), transparent 70%);
+  }
+
+  .hero-logo {
+    font-size: 4.5rem;
+    font-weight: 900;
+    letter-spacing: -.04em;
+    background: linear-gradient(135deg, var(--accent), #ff8a80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .hero-sub {
+    font-size: 1.5rem;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .hero-tagline {
+    font-size: 1.8rem;
+    font-weight: 700;
+    max-width: 700px;
+    line-height: 1.5;
+  }
+
+  .hero-tagline em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    animation: bounce 2s infinite;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ===== Section titles ===== */
+  .section-title {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .section-title span {
+    background: linear-gradient(135deg, var(--accent), #ff8a80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ===== What is voivoi ===== */
+  .about-content {
+    max-width: 900px;
+    text-align: center;
+  }
+
+  .about-content p {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    color: var(--muted);
+  }
+
+  .about-content .highlight {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .pill {
+    background: var(--card);
+    border: 1px solid rgba(233,69,96,.3);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: .95rem;
+    white-space: nowrap;
+  }
+
+  /* ===== Architecture ===== */
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .arch-node {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-align: center;
+    min-width: 200px;
+    border: 2px solid transparent;
+    transition: border-color .3s, transform .3s;
+  }
+
+  .arch-node:hover {
+    transform: translateY(-4px);
+  }
+
+  .arch-node.stt { border-color: var(--green); }
+  .arch-node.llm { border-color: var(--blue); }
+  .arch-node.tts { border-color: var(--purple); }
+
+  .arch-node .icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .arch-node .label {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .arch-node .tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem;
+    color: var(--muted);
+  }
+  .arch-node .desc {
+    font-size: .9rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .arch-arrow {
+    font-size: 2rem;
+    color: var(--muted);
+    padding: 0 12px;
+  }
+
+  .arch-detail {
+    max-width: 800px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .arch-detail-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .arch-detail-card h4 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .arch-detail-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .arch-detail-card li {
+    font-size: .9rem;
+    color: var(--muted);
+    padding: 4px 0;
+  }
+
+  .arch-detail-card li::before {
+    content: ">";
+    color: var(--accent);
+    margin-right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ===== Demo ===== */
+  .demo-terminal {
+    background: #1e1e2e;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 700px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+
+  .terminal-bar {
+    background: #2a2a3e;
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .terminal-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .terminal-dot.red { background: #ff5f56; }
+  .terminal-dot.yellow { background: #ffbd2e; }
+  .terminal-dot.green { background: #27c93f; }
+
+  .terminal-body {
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .9rem;
+    line-height: 2;
+  }
+
+  .terminal-body .prompt { color: var(--green); }
+  .terminal-body .cmd { color: var(--text); }
+  .terminal-body .output { color: var(--muted); }
+  .terminal-body .user-msg { color: #fff; font-weight: bold; }
+  .terminal-body .ai-msg { color: #22d3ee; font-weight: bold; }
+
+  /* ===== Roadmap / Future ===== */
+  .roadmap {
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .roadmap-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    border-left: 4px solid var(--accent);
+    transition: transform .3s;
+  }
+
+  .roadmap-card:hover { transform: translateY(-4px); }
+
+  .roadmap-card.agent { border-left-color: var(--orange); }
+  .roadmap-card.tool { border-left-color: var(--blue); }
+  .roadmap-card.ux { border-left-color: var(--purple); }
+  .roadmap-card.infra { border-left-color: var(--green); }
+
+  .roadmap-card .badge {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  .roadmap-card.agent .badge { background: rgba(251,146,60,.2); color: var(--orange); }
+  .roadmap-card.tool .badge { background: rgba(96,165,250,.2); color: var(--blue); }
+  .roadmap-card.ux .badge { background: rgba(167,139,250,.2); color: var(--purple); }
+  .roadmap-card.infra .badge { background: rgba(74,222,128,.2); color: var(--green); }
+
+  .roadmap-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+
+  .roadmap-card p {
+    font-size: .9rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ===== Stack ===== */
+  .stack-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    max-width: 800px;
+  }
+
+  .stack-item {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px 28px;
+    text-align: center;
+    min-width: 140px;
+  }
+
+  .stack-item .name {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .stack-item .role {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    min-height: auto;
+    padding: 40px;
+    text-align: center;
+    background: var(--surface);
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  /* ===== Design pattern ===== */
+  .design-section {
+    background: radial-gradient(ellipse at 50% 50%, rgba(15,52,96,.3), transparent 70%);
+  }
+
+  .design-diagram {
+    max-width: 800px;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .design-box {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    padding: 20px 28px;
+    text-align: center;
+    margin: 0 auto 16px;
+    max-width: 500px;
+  }
+
+  .design-box .title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+
+  .design-box .detail {
+    font-size: .85rem;
+    color: var(--muted);
+  }
+
+  .di-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.4rem;
+    margin: 8px 0;
+  }
+
+  .di-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .di-row .design-box {
+    flex: 1;
+    min-width: 200px;
+    max-width: 250px;
+    border-color: rgba(233,69,96,.3);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .hero-logo { font-size: 4rem; }
+    .hero-tagline { font-size: 1.5rem; }
+    .section-title { font-size: 2rem; }
+    .arch-flow { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+    .arch-detail { grid-template-columns: 1fr; }
+    .roadmap-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== Hero ==================== -->
+<section class="hero">
+  <div class="hero-logo">voivoi</div>
+  <div class="hero-sub">ターミナルで動くローカル音声LLMアプリ</div>
+  <div class="hero-tagline">
+    キーボード触らずに<br><em>声だけ</em>でLLMと話せる
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- ==================== 背景 ==================== -->
+<section>
+  <div class="section-title"><span>背景</span></div>
+  <div class="about-content" style="background: var(--card); border: 1px solid rgba(233,69,96,.3); border-radius: 16px; padding: 36px 40px; text-align: left;">
+    <p>
+      Claude Code をはじめ、CLIで動くコーディングエージェントが増え、<br>
+      ターミナルで過ごす時間が長くなってきた。
+    </p>
+    <p>
+      コーディングのような重い作業ではなく、ちょっとした質問を声でさっと聞ける。<br>
+      <span class="highlight">ターミナルから出ずに声でLLMと会話できたら便利だな</span>と思って作りました。
+    </p>
+    <p>
+      また、<span class="highlight">すべてローカルで完結</span>させることで、<br>
+      プライバシーやLLMの利用料金を気にせず使えるようにしたかった。
+    </p>
+  </div>
+</section>
+
+<!-- ==================== About ==================== -->
+<section>
+  <div class="section-title"><span>What is voivoi?</span></div>
+  <div class="about-content">
+    <p>
+      voivoi は、<span class="highlight">ターミナルで完結する</span>ローカル音声LLMアプリです。
+    </p>
+    <p>
+      マイクに話しかけるだけで、音声認識 → LLM応答 → 読み上げまで一連の処理を行います。<br>
+      クラウドAPI不要。すべてローカルで動作します。
+    </p>
+    <div class="feature-pills">
+      <div class="pill">ターミナルで完結</div>
+      <div class="pill">完全ローカル動作</div>
+      <div class="pill">無音検知で自動録音停止</div>
+      <div class="pill">会話履歴の自動保存</div>
+      <div class="pill">バージイン（割り込み）対応</div>
+      <div class="pill">Web検索ツール</div>
+      <div class="pill">STT / LLM / TTS 差し替え可能</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Tech Stack ==================== -->
+<section>
+  <div class="section-title"><span>Tech Stack</span></div>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="name">Python 3.14</div>
+      <div class="role">開発言語</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">Ollama</div>
+      <div class="role">ローカルLLM実行環境</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">Whisper</div>
+      <div class="role">音声認識（STT）</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">pyttsx3</div>
+      <div class="role">音声合成（TTS）</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">PyAudio</div>
+      <div class="role">マイク録音・再生</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">Typer</div>
+      <div class="role">CLIフレームワーク</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">Pydantic</div>
+      <div class="role">設定バリデーション</div>
+    </div>
+    <div class="stack-item">
+      <div class="name">uv</div>
+      <div class="role">パッケージ管理</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Architecture ==================== -->
+<section>
+  <div class="section-title"><span>Architecture</span></div>
+  <div class="arch-flow">
+    <div class="arch-node stt">
+      <div class="icon">🎤</div>
+      <div class="label">STT</div>
+      <div class="tech">OpenAI Whisper</div>
+      <div class="desc">音声 → テキスト</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node llm">
+      <div class="icon">🧠</div>
+      <div class="label">LLM</div>
+      <div class="tech">Ollama</div>
+      <div class="desc">テキスト → 応答生成</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node tts">
+      <div class="icon">🔊</div>
+      <div class="label">TTS</div>
+      <div class="tech">pyttsx3</div>
+      <div class="desc">テキスト → 音声</div>
+    </div>
+  </div>
+  <div class="arch-detail">
+    <div class="arch-detail-card">
+      <h4 style="color: var(--green);">STT - 音声認識</h4>
+      <ul>
+        <li>Whisperによるローカル文字起こし</li>
+        <li>無音検知で自動録音停止</li>
+        <li>日本語・英語対応</li>
+        <li>モデルサイズ選択可能</li>
+      </ul>
+    </div>
+    <div class="arch-detail-card">
+      <h4 style="color: var(--blue);">LLM - 応答生成</h4>
+      <ul>
+        <li>OllamaでローカルLLM実行</li>
+        <li>任意のモデルを指定可能</li>
+        <li>会話履歴を保持</li>
+        <li>ツール呼び出し対応</li>
+      </ul>
+    </div>
+    <div class="arch-detail-card">
+      <h4 style="color: var(--purple);">TTS - 音声合成</h4>
+      <ul>
+        <li>pyttsx3でオフライン音声合成</li>
+        <li>バージイン（割り込み）対応</li>
+        <li>読み上げ中に話すと中断</li>
+        <li>読み上げON/OFF切り替え可能</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Design ==================== -->
+<section class="design-section">
+  <div class="section-title"><span>Design</span></div>
+  <div class="design-diagram">
+    <div class="design-box">
+      <div class="title">Orchestrator</div>
+      <div class="detail">STT / LLM / TTS を協調制御</div>
+    </div>
+    <div class="di-arrow">↓ 依存注入（DI）</div>
+    <div class="di-row">
+      <div class="design-box">
+        <div class="title">STT Adapter</div>
+        <div class="detail">Whisper</div>
+      </div>
+      <div class="design-box">
+        <div class="title">LLM Adapter</div>
+        <div class="detail">Ollama</div>
+      </div>
+      <div class="design-box">
+        <div class="title">TTS Adapter</div>
+        <div class="detail">pyttsx3</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top: 16px;">
+      <p style="color: var(--muted); font-size: .95rem;">
+        各コンポーネントは依存注入で差し替え可能。<br>
+        Whisper以外のSTTや、別のTTSエンジンへの切り替えも容易。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Demo ==================== -->
+<section>
+  <div class="section-title"><span>Demo</span></div>
+  <div class="demo-terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot red"></div>
+      <div class="terminal-dot yellow"></div>
+      <div class="terminal-dot green"></div>
+    </div>
+    <div class="terminal-body">
+      <div><span class="prompt">$</span> <span class="cmd">uv run voivoi chat</span></div>
+      <div class="output">voivoi v0.1.0 - Voice LLM Chat</div>
+      <div class="output">Model: gemma3 | Whisper: base | Lang: ja</div>
+      <div class="output" style="margin-top:8px;">Listening...</div>
+      <div style="margin-top:8px;"><span class="user-msg">&gt; </span>今日の天気を教えて</div>
+      <div style="margin-top:4px;"><span class="ai-msg">● </span>今日の天気ですね。Web検索で調べてみます...</div>
+      <div class="output" style="margin-top:4px;">[tool_call: web_search("今日の天気")]</div>
+      <div style="margin-top:4px;"><span class="ai-msg">● </span>今日は晴れで最高気温22度の予報です。</div>
+      <div class="output" style="margin-top:4px;">Speaking...</div>
+      <div class="output" style="margin-top:8px;">Listening...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Roadmap ==================== -->
+<section>
+  <div class="section-title"><span>Roadmap</span></div>
+  <div class="roadmap">
+    <div class="roadmap-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="roadmap-card tool">
+        <div class="badge">Tool</div>
+        <h3>ツール拡充</h3>
+        <p>Web検索は実装済み。ファイル操作やコード実行、カレンダー連携などのツールも追加予定。LLMが自律的にツールを選択・実行するエージェントを目指す。</p>
+      </div>
+      <div class="roadmap-card tool" style="border-left-color: var(--purple);">
+        <div class="badge" style="background: rgba(167,139,250,.2); color: var(--purple);">MCP</div>
+        <h3>MCP連携</h3>
+        <p>Model Context Protocol サーバーへの接続をサポートし、外部ツール・データソースとの連携を可能にする。</p>
+      </div>
+      <div class="roadmap-card agent">
+        <div class="badge">Memory</div>
+        <h3>長期記憶</h3>
+        <p>現在はセッションごとに記憶がリセットされる。会話を跨いだ長期記憶を導入し、過去の内容を踏まえた応答を可能にする。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ==================== Footer ==================== -->
+<section class="footer">
+  <div class="hero-logo" style="font-size: 3rem; margin-bottom: 16px;">voivoi</div>
+  <p style="color: var(--muted); margin-bottom: 16px;">ターミナルで動くローカル音声LLMアプリ</p>
+  <p><a href="https://github.com/MiuraToya/voivoi">github.com/MiuraToya/voivoi</a></p>
+</section>
+
+</body>
+</html>
